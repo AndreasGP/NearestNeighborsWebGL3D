@@ -127,7 +127,7 @@ function setPixelRGB(image, x, y, r, g, b) {
 
 //Generating the Three.js preview
 
-var camera, scene, renderer;
+var camera, scene, renderer, controls;
 var mesh;
 var cameraRadius = 27;
 var clock = new THREE.Clock();
@@ -220,6 +220,19 @@ function init() {
 	renderer.setPixelRatio( width / width);
 	renderer.setSize( width * 3, width * 3 );
 	document.getElementById("3D").appendChild( renderer.domElement );
+
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	controls.enableDamping = true;
+	controls.dampingFactor = 0.25;
+	controls.enablePan = false;
+	controls.enableZoom = true;
+	controls.minDistance = 10;
+	controls.maxDistance = 35;
+
+	//Initial camera position
+	var angle = 5;
+	camera.position.set(Math.sin(angle) * cameraRadius, cameraRadius * 0.3 - 2, Math.cos(angle) * cameraRadius);
+	camera.lookAt(new THREE.Vector3(0, -2, 0));
 }
 
 
@@ -228,10 +241,10 @@ function animate() {
 	requestAnimationFrame( animate );
 
 	var time = clock.getElapsedTime();
-	
-	camera.position.set(Math.sin(time / 3) * cameraRadius, cameraRadius * 0.3 - 2, Math.cos(time / 3) * cameraRadius);
-	camera.lookAt(new THREE.Vector3(0, -2, 0));
-	//console.log(camera.position);
+
+	controls.update();
+
+	console.log(controls.zoom)
 
 	renderer.render( scene, camera );
 
