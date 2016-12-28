@@ -229,6 +229,10 @@ function init() {
 	controls.minDistance = 10;
 	controls.maxDistance = 35;
 
+	var axisHelper = new THREE.AxisHelper(5)
+	axisHelper.position.set(-10.5, -10.5, -10.5)
+	scene.add(axisHelper)
+
 	//Initial camera position
 	var angle = 5;
 	camera.position.set(Math.sin(angle) * cameraRadius, cameraRadius * 0.3 - 2, Math.cos(angle) * cameraRadius);
