@@ -201,6 +201,10 @@ function init() {
 	oct = new OctTree(0,0,0,1,points);
 	while(oct.doStep());
 	oct.draw();
+	
+	kd = new KDTree(0,0,0,1,1,1,0,points);
+	while(kd.doStep());
+	kd.draw();
 
 	//Initial camera position
 	var angle = 5;
