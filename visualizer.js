@@ -134,47 +134,42 @@ var clock = new THREE.Clock();
 
 init();
 animate();
-generateGrid();
 generatePoints();
 
-function generateGrid() {
+//Draw the outline grid
+addCube([0, 0, 0], [1, 1, 1], 0x000000)
+addCube([0.25, 0.25, 0.25], [0.5, 0.5, 0.5], 0xFF0000)
+addCube([0.75, 0.75, 0], [0.25, 0.25, 0.25], 0x0000FF)
+
+//Adds a cube to the 3D scene. INPUT EXPECTED TO BE IN RANGE [0, 0, 0] to [1, 1, 1] FOR POS AND SIZE
+//#pos - bottom corner of the cube (3 element array [] containing XYZ)
+//#size - the size of the cube (3 element array [] containing XYZ)
+//#color - the color of the cube (color has hex code, eg. 0x00FF00)
+//Returns the instance of the object made so it's possible to later remove it
+//from the scene
+function addCube(pos, size, color) {
+
+	//Convert pos [0, 1] range to [-10, 10] range
+	pos[0] = pos[0] * 20 - 10
+	pos[1] = pos[1] * 20 - 10
+	pos[2] = pos[2] * 20 - 10
+
+	//Convert size [0, 1] range to [0, 20] range
+	size[0] = size[0] * 20
+	size[1] = size[1] * 20
+	size[2] = size[2] * 20
 
 	var material = new THREE.LineBasicMaterial({
-            color: 0x000000
+            color: color
         });
+    var geometry = new THREE.EdgesGeometry( new THREE.CubeGeometry( size[0], size[1], size[2] ) );
+    var wireframe = new THREE.LineSegments( geometry, material);
+    
+    //By default the cube is positioned at the middle point, we want it to be at the min XYZ corner
+    wireframe.position.set(pos[0] + size[0]/2, pos[1] + size[1]/2, pos[2] + size[2]/2)
 
-	var geometry = new THREE.Geometry();
-
-	//bottom corners + at each corner go up once 
-    geometry.vertices.push(new THREE.Vector3(-10, -10, -10));
-
-
-    geometry.vertices.push(new THREE.Vector3(-10, -10, 10));
-	geometry.vertices.push(new THREE.Vector3(-10, 10, 10));
-	geometry.vertices.push(new THREE.Vector3(-10, -10, 10));
-
-    geometry.vertices.push(new THREE.Vector3(10, -10, 10));
-	geometry.vertices.push(new THREE.Vector3(10, 10, 10));
-	geometry.vertices.push(new THREE.Vector3(10, -10, 10));
-
-    geometry.vertices.push(new THREE.Vector3(10, -10, -10));
-	geometry.vertices.push(new THREE.Vector3(10, 10, -10));
-	geometry.vertices.push(new THREE.Vector3(10, -10, -10));
-
-    geometry.vertices.push(new THREE.Vector3(-10, -10, -10));
-    geometry.vertices.push(new THREE.Vector3(-10, 10, -10));
-
-    //top
-    geometry.vertices.push(new THREE.Vector3(-10, 10, 10));
-    geometry.vertices.push(new THREE.Vector3(10, 10, 10));
-    geometry.vertices.push(new THREE.Vector3(10, 10, -10));
-    geometry.vertices.push(new THREE.Vector3(-10, 10, -10));
-
-    var line = new THREE.Line(geometry, material);
-
-    scene.add(line);
+    scene.add( wireframe );
 }
-
 
 function generatePoints() {
 	//TODO: Use billboarding or particles instead of expensive spheres
@@ -247,8 +242,6 @@ function animate() {
 	var time = clock.getElapsedTime();
 
 	controls.update();
-
-	console.log(controls.zoom)
 
 	renderer.render( scene, camera );
 
