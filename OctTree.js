@@ -37,7 +37,7 @@ OctTree.prototype.addObject = function(object){
 //Render octree
 OctTree.prototype.draw = function(){
 	//Render self
-	addCube([this.x,this.y,this.z],[this.width,this.width,this.width],0xFF5555);
+	addCube([this.x/20,this.y/20,this.z/20],[this.width/20,this.width/20,this.width/20],0xFF5555);
 	//Render children
 	for(var i = 0; i < this.children.length; i++){
 		this.children[i].draw();
@@ -113,11 +113,30 @@ function distanceTo(node, point){
 	return distance(point,[x,y,z]);
 }
 
+//Check the current octant for closest node inside that octant, if any excist.
+OctTreeNearestNeighbor.prototype.checkOctant = function(node){
+	if(this.nearestDistance == null){
+		this.nearestDistance = Infinity;
+	}
+	var points = node.objects;
+	var change = false;
+	for(var i = 0; i < points.length; i++){
+		console.log(distance(points[i],this.point))
+		if(distance(points[i],this.point) < this.nearestDistance){
+			this.nearestDistance = distance(points[i],this.point);
+			this.nearestPoint = points[i];
+			change = true;
+		}
+	}
+	this.visitedOctants.push(node);
+	return change;
+}
+
 OctTreeNearestNeighbor.prototype.draw = function(){
 	//Draw the octree
 	this.octree.draw();
 	//Draw curent residential octant with different color
-	
+	addCube([this.residingOctant.x/20,this.residingOctant.y/20,this.residingOctant.z/20],[this.residingOctant.width/20,this.residingOctant.width/20,this.residingOctant.width/20],0xFF8899);
 	//Draw visited octants with different color
 	
 	//Draw a sphere showing current search radius
@@ -141,44 +160,28 @@ OctTreeNearestNeighbor.prototype.doStep = function(){
 				}
 			}
 		}
-		return;
+		return true;
 	}
+	//Siin mingit huina muinat vaja teha
 	if(!this.nearestDistance){
-		this.checkOctant(node);
-		return;
+		this.checkOctant(this.residingOctant);
+		return true;
 	}
 	
+	//Ei käi kõike läbi... vajab uurimist.
 	while(this.residingOctant.Parent != null){
 		var Parent = this.residingOctant.Parent;
-		
-		for(var i = 0; i < 8; i++){
+		for(var i = 0; i < Parent.children.length; i++){
 			var node = Parent.children[i];
-			
-			if(!this.visitedOctants.contains(node) && distanceTo(node,this.point) < this.nearestDistance){
+			if(this.visitedOctants.indexOf(node) == -1 && distanceTo(node,this.point) < this.nearestDistance){
 				if(this.checkOctant(node)){
 					this.residingOctant = node;
-					return;
+					return true;
 				}
 			}
 		}
+		this.residingOctant = Parent;
 	}
 	//Tagasta midagi, et teaks et on lähim leitud.
-}
-
-//Check the current octant for closest node inside that octant, if any excist.
-OctTree.prototype.checkOctant = function(node){
-	if(!this.nearestDistance){
-		this.nearestDistance = Infinity;
-	}
-	var points = node.objects;
-	var change = false;
-	for(var i = 0; i < points.length; i++){
-		if(distance(points[i],this.point) < this.nearestDistance){
-			this.nearestDistance = distance(points[i],this.point);
-			this.nearestPoint = points[i];
-			change = true;
-		}
-	}
-	this.visitedOctants.push(node);
-	return change;
+	return false
 }
