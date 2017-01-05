@@ -42,6 +42,7 @@ KDTree.prototype.addObject = function(object){
 //Render kdree
 KDTree.prototype.draw = function(){
 	//Render self
+	addCube([this.x,this.y,this.z],[this.xwidth,this.ywidth,this.zwidth],0xFF5555);
 	
 	//Render children
 	for(var i = 0; i < this.children.length; i++){
