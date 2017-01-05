@@ -9,7 +9,7 @@ var KDTree = function(x, y, z, xwidth, ywidth, zwidth, lvl, objects, Parent = nu
 	this.lvl = lvl;
 	this.children = [];
 	this.objects = objects;
-	this.MAX_OBJECTS = 5;
+	this.MAX_OBJECTS = 2;
 	this.Parent = Parent;
 }
 
@@ -31,9 +31,9 @@ KDTree.prototype.contains = function(obj){
 
 //Add object to current section
 KDTree.prototype.addObject = function(object){
-	for(var i = 0; i < 2; i++){
+	for(var i = 0; i < this.children.length; i++){
 		if(this.children[i].contains(object)){
-			this.children.objects.push(object);
+			this.children[i].objects.push(object);
 			break;
 		}
 	}
@@ -42,7 +42,7 @@ KDTree.prototype.addObject = function(object){
 //Render kdree
 KDTree.prototype.draw = function(){
 	//Render self
-	addCube([this.x,this.y,this.z],[this.xwidth,this.ywidth,this.zwidth],0xFF5555);
+	addCube([this.x/20,this.y/20,this.z/20],[this.xwidth/20,this.ywidth/20,this.zwidth/20],0xFF5555);
 	
 	//Render children
 	for(var i = 0; i < this.children.length; i++){
@@ -55,9 +55,8 @@ KDTree.prototype.doStep = function(){
 	if(this.objects.length > this.MAX_OBJECTS){
 
 		var temp = JSON.parse(JSON.stringify(this.objects));
-		temp.sort(function(a,b){compare(a,b,this.lvl%3)});
+		temp = temp.sort(function(a,b){return compare(a,b,0)});
 		var splitpoint = temp[Math.floor(temp.length/2)];
-		console.log(splitpoint);
 		
 		this.objects = [];
 		
@@ -65,23 +64,23 @@ KDTree.prototype.doStep = function(){
 		
 		if(this.lvl%3 == 0){
 			newwidth = splitpoint[0] - this.x;
-			this.children[0] = new KDTree(this.x,this.y,this.z, newwidth,this.ywidth,this.zwidth, this.lvl+1, this);
-			this.children[1] = new KDTree(splitpoint[0],this.y,this.z, this.xwidth-newwidth,this.ywidth,this.zwidth, this.lvl+1, this);
+			this.children[0] = new KDTree(this.x,this.y,this.z, newwidth,this.ywidth,this.zwidth, this.lvl+1, [], this);
+			this.children[1] = new KDTree(splitpoint[0],this.y,this.z, this.xwidth-newwidth,this.ywidth,this.zwidth, this.lvl+1, [], this);
 		} else if(this.lvl%3 == 1){
 			newwidth = splitpoint[1]-this.y;
-			this.children[0] = new KDTree(this.x,this.y,this.z, this.xwidth,newwidth,this.zwidth, this.lvl+1, this);
-			this.children[1] = new KDTree(this.x,splitpoint[1],this.z, this.xwidth,this.ywidth-newwidth,this.zwidth, this.lvl+1, this);
+			this.children[0] = new KDTree(this.x,this.y,this.z, this.xwidth,newwidth,this.zwidth, this.lvl+1, [], this);
+			this.children[1] = new KDTree(this.x,splitpoint[1],this.z, this.xwidth,this.ywidth-newwidth,this.zwidth, this.lvl+1, [], this);
 		} else {
 			newwidth = splitpoint[2]-this.z;
-			this.children[0] = new KDTree(this.x,this.y,this.z, this.xwidth,this.ywidth,newwidth, this.lvl+1, this);
-			this.children[1] = new KDTree(this.x,this.y,splitpoint[2], this.xwidth,this.ywidth,this.zwidth-newwidth, this.lvl+1, this);
+			this.children[0] = new KDTree(this.x,this.y,this.z, this.xwidth,this.ywidth,newwidth, this.lvl+1, [], this);
+			this.children[1] = new KDTree(this.x,this.y,splitpoint[2], this.xwidth,this.ywidth,this.zwidth-newwidth, this.lvl+1, [], this);
 		}
 
 		
 		for(var i = 0; i < temp.length; i++){
 			this.addObject(temp[i]);
-			return true;
 		}
+		return true;
 		
 	} else {
 		for(var i = 0; i < this.children.length; i++){
