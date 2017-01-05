@@ -13,13 +13,89 @@
 	<br>
 	<div class="container">
 		<div class="well">
-			<h2>Advanced algorithmics project</h2>
+			<h1 class ="text-center">Nearest Neighbour Search 3D Visualization</h1>
 			<div class="bottom"></div>
 			<div>
-				<p>Coolbeans description here.</p>
+				<p>Coolbeans description here. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sit amet auctor lectus. Nam et urna diam. Nam sit amet porttitor erat, id volutpat libero. Nunc libero urna, laoreet porttitor pretium a, efficitur et velit. Nulla vel sapien sit amet augue dapibus condimentum. Sed laoreet sodales dolor, at tristique diam dignissim non. Praesent vel dui tincidunt, mattis tortor nec, blandit nibh. Curabitur lorem magna, mattis at justo vel, egestas bibendum nibh.</p>
 			</div>
 			<br>
 			<br>
+			<div class="row">
+				<div class="col-md-6">
+					<h3>1. Insert 3D data to be searched</h3>
+					<div class="col-md-12">
+					Use format "(0, 0, 0)", one point per line.
+					</div>
+					<div class="col-md-offset-2 col-md-8">
+						<textarea class="form-control" rows="5" id="comment"></textarea>
+					</div>
+					<div class=" col-md-offset-3 col-md-6">
+						<button type="button" class="btn btn-lg btn-primary center-block">Submit</button>
+					</div>
+				</div>
+				<div class="col-md-1">
+					<h1><strong>or</strong></h1>
+				</div>
+				<div class="col-md-4">
+					<h3>Generate random data</h3>
+					<div class="form-group  col-md-12">
+					  <label for="randomElementsCount">Number of elements:</label>
+					  <select class="form-control" id="randomElementsCount">
+					    <option>10</option>
+					    <option>25</option>
+					    <option>50</option>
+					    <option>100</option>
+					    <option>500</option>
+					    <option>1000</option>
+					    <option>5000</option>
+					  </select>
+					</div>
+					<div class=" col-md-offset-3 col-md-6">
+						<button type="button" class="btn btn-lg btn-primary">Generate</button>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<h3>2. Insert a point to be searched around</h3>
+					<div class="row">
+						<div class="col-md-offset-2 col-md-6 text-center">
+							Use format "(0, 0, 0)".
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-offset-1 col-md-8">
+							<input type="text" class="form-control" id="searchablePoint">
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<h3>3. Pick a search algorithm</h3>
+					<div class="row">
+						<div class="col-md-offset-2 col-md-8">
+							<select class="form-control">
+								<option value="octree">Octtree</option>
+								<option value="kdtree">KD-tree</option>
+							</select>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-offset-2 col-md-4">
+							<button type="button" class="btn btn-lg btn-primary center-block">Do step</button>
+						</div>
+						<div class="col-md-3">
+							<button type="button" class="btn btn-lg btn-primary center-block">Restart</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="text-center col-lg-12">
+					<font size="20">3D</font><br>
+					<div id="3D">
+					</div>
+				</div>
+			</div>
 			<div class="row">
 				<div class="text-center col-lg-4">
 					<font size="20">XY</font><br>
@@ -35,48 +111,6 @@
 					<font size="20">YZ</font><br>
 					<canvas id="YZcanvas" width="256" height="256">
 					</canvas>
-				</div>
-			</div>
-			<div class="row">
-				<div class="text-center col-lg-4">
-					<div class="col-lg-6">
-						Search node:
-					</div>
-					<div class="col-lg-6">
-						<input >
-					</div>
-					<div class="col-lg-12">
-						Space partitioning:
-					</div>
-					<div class="col-lg-12">
-						<select>
-							<option value="octree">Octtree</option>
-							<option value="kdtree">KD-tree</option>
-						</select>
-					</div>
-					<div class="col-lg-12">
-						<button>Do step!</button>
-					</div>
-					<div class="col-lg-12">
-						<button>Reset/Restart</button>
-					</div>
-					<div class="col-lg-12">
-						Data:
-					</div>
-					<div class="col-lg-12">
-						<button>Generate data</button>
-					</div>
-					<div class="col-lg-12">
-						<textarea> </textarea>
-					</div>
-					<div class="col-lg-12">
-						<button>Draw data</button>
-					</div>
-				</div>
-				<div class="text-center col-lg-8">
-					<font size="20">3D</font><br>
-					<div id="3D">
-					</div>
 				</div>
 			</div>
 		</div>

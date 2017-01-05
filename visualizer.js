@@ -164,10 +164,9 @@ function addCube(pos, size, color) {
         });
     var geometry = new THREE.EdgesGeometry( new THREE.CubeGeometry( size[0], size[1], size[2] ) );
     var wireframe = new THREE.LineSegments( geometry, material);
+    
     //By default the cube is positioned at the middle point, we want it to be at the min XYZ corner
-    console.log(wireframe.position)
     wireframe.position.set(pos[0] + size[0]/2, pos[1] + size[1]/2, pos[2] + size[2]/2)
-	console.log(wireframe.position)
 
     scene.add( wireframe );
 }
