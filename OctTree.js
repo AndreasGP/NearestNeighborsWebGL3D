@@ -1,17 +1,17 @@
 //Main Octree Object. 
-var OctTree = function(x,y,z,width, objects, Parent = null){
+var OctTree = function(x, y, z, width, objects, Parent = null){
 	this.x = x;
 	this.y = y;
 	this.z = z;
 	this.width = width;
 	this.children = [];
 	this.objects = objects;
-	this.MAX_OBJECTS = 5;
+	this.MAX_OBJECTS = 1;
 	this.Parent = Parent;
 }
 
 //Check if a given point exsists within this octree/octant
-OctTree.prototype.contains = function(object){
+OctTree.prototype.contains = function(obj){
 	if(obj[0] > this.x && obj[0] <= this.x + this.width){
 		if(obj[1] > this.y && obj[1] <= this.y + this.width){
 			if(obj[2] > this.z && obj[2] <= this.z + this.width){
@@ -25,19 +25,19 @@ OctTree.prototype.contains = function(object){
 }
 
 //Add object to current octree/octant
-OctTree.prototype.addObject(object){
+OctTree.prototype.addObject=function(object){
 	for(var i = 0; i < 8; i++){
 		if(this.children[i].contains(object)){
-			this.children.objects.push(object);
+			this.children[i].objects.push(object);
 			break;
 		}
 	}
 }
 
 //Render octree
-Octree.prototype.draw = function(){
+OctTree.prototype.draw = function(){
 	//Render self
-	
+	addCube([this.x,this.y,this.z],[this.width,this.width,this.width],0xFF5555);
 	//Render children
 	for(var i = 0; i < this.children.length; i++){
 		this.children[i].draw();
@@ -47,14 +47,14 @@ Octree.prototype.draw = function(){
 //A single step of octree building
 OctTree.prototype.doStep = function(){
 	if(this.objects.length > this.MAX_OBJECTS){
-		this.children[0] = new OctTree(x,y,z,width/2,this);
-		this.children[1] = new OctTree(x+width/2,y,z,width/2,this);
-		this.children[2] = new OctTree(x,y,z+depth/2,width/2,this);
-		this.children[3] = new OctTree(x+width/2,y,z+depth/2,width/2,this);
-		this.children[4] = new OctTree(x,y+height/2,z,width/2,this);
-		this.children[5] = new OctTree(x+width/2,y+height/2,z,width/2,this);
-		this.children[6] = new OctTree(x,y+height/2,z+depth/2,width/2,this);
-		this.children[7] = new OctTree(x+width/2,y+height/2,z+depth/2,width/2,this);
+		this.children[0] = new OctTree(this.x, this.y, this.z, this.width/2, [], this);
+		this.children[1] = new OctTree(this.x+this.width/2, this.y, this.z, this.width/2, [], this);
+		this.children[2] = new OctTree(this.x, this.y, this.z+this.width/2, this.width/2, [], this);
+		this.children[3] = new OctTree(this.x+this.width/2, this.y, this.z+this.width/2, this.width/2, [], this);
+		this.children[4] = new OctTree(this.x, this.y+this.width/2, this.z, this.width/2, [], this);
+		this.children[5] = new OctTree(this.x+this.width/2, this.y+this.width/2, this.z, this.width/2, [], this);
+		this.children[6] = new OctTree(this.x, this.y+this.width/2, this.z+this.width/2, this.width/2, [], this);
+		this.children[7] = new OctTree(this.x+this.width/2, this.y+this.width/2, this.z+this.width/2, this.width/2,[ ], this);
 
 		
 		var temp = JSON.parse(JSON.stringify(this.objects));
@@ -63,9 +63,10 @@ OctTree.prototype.doStep = function(){
 		
 		for(var i = 0; i < temp.length; i++){
 			this.addObject(temp[i]);
+		}
 		return true;
 	}else{
-		for(var i = 0; i < 8; i++){
+		for(var i = 0; i < this.children.length; i++){
 			if(this.children[i].doStep()){
 				return true;
 			}
