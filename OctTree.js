@@ -25,7 +25,7 @@ OctTree.prototype.contains = function(obj){
 }
 
 //Add object to current octree/octant
-OctTree.prototype.addObject=function(object){
+OctTree.prototype.addObject = function(object){
 	for(var i = 0; i < 8; i++){
 		if(this.children[i].contains(object)){
 			this.children[i].objects.push(object);
@@ -63,9 +63,9 @@ OctTree.prototype.doStep = function(){
 		
 		for(var i = 0; i < temp.length; i++){
 			this.addObject(temp[i]);
+			return true;
 		}
-		return true;
-	}else{
+	} else {
 		for(var i = 0; i < this.children.length; i++){
 			if(this.children[i].doStep()){
 				return true;
