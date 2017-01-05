@@ -197,13 +197,18 @@ function init() {
 	var axisHelper = new THREE.AxisHelper(5)
 	axisHelper.position.set(-10.5, -10.5, -10.5)
 	scene.add(axisHelper)
-	
+	/*
 	//Octree test
 //	oct = new OctTree(0,0,0,20,points);
 //	while(oct.doStep());
 //   nn = new OctTreeNearestNeighbor(oct, [4,4,4]);
 //	while(nn.doStep());
 //	nn.draw()
+	*/
+	
+	kd = new KDTree(0,0,0,1,1,1,0,points);
+	while(kd.doStep());
+	kd.draw();
 
 	//Initial camera position
 	var angle = 5;
