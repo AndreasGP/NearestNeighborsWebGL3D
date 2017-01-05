@@ -9,7 +9,7 @@ var KDTree = function(x, y, z, xwidth, ywidth, zwidth, lvl, objects, Parent = nu
 	this.lvl = lvl;
 	this.children = [];
 	this.objects = objects;
-	this.MAX_OBJECTS = 2;
+	this.MAX_OBJECTS = 3;
 	this.Parent = Parent;
 }
 
@@ -42,8 +42,18 @@ KDTree.prototype.addObject = function(object){
 //Render kdree
 KDTree.prototype.draw = function(){
 	//Render self
-	addCube([this.x/20,this.y/20,this.z/20],[this.xwidth/20,this.ywidth/20,this.zwidth/20],0xFF5555);
-	
+	var colors = [0xFF5555, 0x55FF55, 0x5555FF];
+	if(this.children.length>1){
+		var split = this.children[1];
+		switch(this.lvl%3){
+		case 0:
+			addCube([split.x/20+0.001,split.y/20+0.001,split.z/20+0.001],[0,split.ywidth/20-0.002,split.zwidth/20-0.002],colors[0]);
+		case 1:
+			addCube([split.x/20+0.001,split.y/20+0.001,split.z/20+0.001],[split.xwidth/20-0.002,0,split.zwidth/20-0.002],colors[1]);
+		case 2:
+			addCube([split.x/20+0.001,split.y/20+0.001,split.z/20+0.001],[split.xwidth/20-0.002,split.ywidth/20-0.002,0],colors[2]);
+		}
+	}
 	//Render children
 	for(var i = 0; i < this.children.length; i++){
 		this.children[i].draw();
