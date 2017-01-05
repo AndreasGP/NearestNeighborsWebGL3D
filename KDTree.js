@@ -18,7 +18,7 @@ function compare(a, b, xyz){
 }
 
 //Check if a given point exists within this section
-KDTree.prototype.contains = function(object){
+KDTree.prototype.contains = function(obj){
 	if(obj[0] > this.x && obj[0] <= this.x + this.xwidth){
 		if(obj[1] > this.y && obj[1] <= this.y + this.ywidth){
 			if(obj[2] > this.z && obj[2] <= this.z + this.zwidth){
@@ -54,25 +54,26 @@ KDTree.prototype.doStep = function(){
 	if(this.objects.length > this.MAX_OBJECTS){
 
 		var temp = JSON.parse(JSON.stringify(this.objects));
-		temp.sort(function(a,b){compare(a,b,lvl%3)});
-		var splitpoint = temp[temp.length/2]
+		temp.sort(function(a,b){compare(a,b,this.lvl%3)});
+		var splitpoint = temp[Math.floor(temp.length/2)];
+		console.log(splitpoint);
 		
-		this.objects = []
+		this.objects = [];
 		
 		var newwidth;
 		
 		if(this.lvl%3 == 0){
-			newwidth = splitpoint[0]-x;
-			this.children[0] = new OctTree(x,y,z, newwidth,ywidth,zwidth, lvl+1, this);
-			this.children[1] = new OctTree(splitpoint[0],y,z, xwidth-newwidth,ywidth,zwidth, lvl+1, this);
+			newwidth = splitpoint[0] - this.x;
+			this.children[0] = new KDTree(this.x,this.y,this.z, newwidth,this.ywidth,this.zwidth, this.lvl+1, this);
+			this.children[1] = new KDTree(splitpoint[0],this.y,this.z, this.xwidth-newwidth,this.ywidth,this.zwidth, this.lvl+1, this);
 		} else if(this.lvl%3 == 1){
-			newwidth = splitpoint[1]-y;
-			this.children[0] = new OctTree(x,y,z, xwidth,newwidth,zwidth, lvl+1, this);
-			this.children[1] = new OctTree(x,splitpoint[1],z, xwidth,ywidth-newwidth,zwidth, lvl+1, this);
+			newwidth = splitpoint[1]-this.y;
+			this.children[0] = new KDTree(this.x,this.y,this.z, this.xwidth,newwidth,this.zwidth, this.lvl+1, this);
+			this.children[1] = new KDTree(this.x,splitpoint[1],this.z, this.xwidth,this.ywidth-newwidth,this.zwidth, this.lvl+1, this);
 		} else {
-			newwidth = splitpoint[2]-z;
-			this.children[0] = new OctTree(x,y,z, xwidth,ywidth,newwidth, lvl+1, this);
-			this.children[1] = new OctTree(x,y,splitpoint[2], xwidth,ywidth,zwidth-newwidth, lvl+1, this);
+			newwidth = splitpoint[2]-this.z;
+			this.children[0] = new KDTree(this.x,this.y,this.z, this.xwidth,this.ywidth,newwidth, this.lvl+1, this);
+			this.children[1] = new KDTree(this.x,this.y,splitpoint[2], this.xwidth,this.ywidth,this.zwidth-newwidth, this.lvl+1, this);
 		}
 
 		
@@ -82,7 +83,7 @@ KDTree.prototype.doStep = function(){
 		}
 		
 	} else {
-		for(var i = 0; i < 2; i++){
+		for(var i = 0; i < this.children.length; i++){
 			if(this.children[i].doStep()){
 				return true;
 			}

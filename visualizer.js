@@ -197,10 +197,11 @@ function init() {
 	var axisHelper = new THREE.AxisHelper(5)
 	axisHelper.position.set(-10.5, -10.5, -10.5)
 	scene.add(axisHelper)
-	
+	/*
 	oct = new OctTree(0,0,0,1,points);
 	while(oct.doStep());
 	oct.draw();
+	*/
 	
 	kd = new KDTree(0,0,0,1,1,1,0,points);
 	while(kd.doStep());
