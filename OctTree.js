@@ -63,8 +63,8 @@ OctTree.prototype.doStep = function(){
 		
 		for(var i = 0; i < temp.length; i++){
 			this.addObject(temp[i]);
-			return true;
 		}
+		return true;
 	} else {
 		for(var i = 0; i < this.children.length; i++){
 			if(this.children[i].doStep()){
