@@ -76,8 +76,8 @@ OctTree.prototype.doStep = function(){
 	return false;
 }
 
-var distance = function(p1,p2){
-	return Math.sqrt(Math.pow(p1.x-p2.x, 2) + Math.pow(p1.y-p2.y, 2) +Math.pow(p1.z-p2.z, 2));
+var dist = function(p1,p2){
+	return Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2) +Math.pow(p1[2]-p2[2], 2));
 }
 
 //Object for radius NN search on octree
@@ -85,6 +85,7 @@ var OctTreeNearestNeighbor = function(octree, point){
 	this.octree = octree;
 	this.point = point;
 	this.residingOctant = null;
+	this.searchOctant = null;
 	this.nearestDistance = null;
 	this.nearestPoint = null;
 	this.visitedOctants = [];
@@ -110,7 +111,7 @@ function distanceTo(node, point){
 		z = node.z + node.width;
 	}
 	
-	return distance(point,[x,y,z]);
+	return Math.min(Math.abs(point[0]-x),Math.abs(point[1]-y),Math.abs(point[2]-z	));
 }
 
 //Check the current octant for closest node inside that octant, if any excist.
@@ -120,12 +121,19 @@ OctTreeNearestNeighbor.prototype.checkOctant = function(node){
 	}
 	var points = node.objects;
 	var change = false;
-	for(var i = 0; i < points.length; i++){
-		console.log(distance(points[i],this.point))
-		if(distance(points[i],this.point) < this.nearestDistance){
-			this.nearestDistance = distance(points[i],this.point);
-			this.nearestPoint = points[i];
-			change = true;
+	if(points.length == 0 && node.children.length != 0){
+		for(var i = 0; i < node.children.length; i++){
+			if(distanceTo(node.children[i], this.point) < this.nearestDistance){
+				return this.checkOctant(node.children[i])
+			}
+		}
+	}else if(points.length != 0){
+		for(var i = 0; i < points.length; i++){
+			if(dist(points[i],this.point) < this.nearestDistance){
+				this.nearestDistance = dist(points[i],this.point);
+				this.nearestPoint = points[i];
+				change = true;
+			}
 		}
 	}
 	this.visitedOctants.push(node);
@@ -133,15 +141,41 @@ OctTreeNearestNeighbor.prototype.checkOctant = function(node){
 }
 
 OctTreeNearestNeighbor.prototype.draw = function(){
+			var geometry = new THREE.SphereGeometry( 0.3, 8, 6 );
+    	var material = new THREE.MeshLambertMaterial( { color: new THREE.Color(0xffffff) } );
+    	var obj = new THREE.Mesh( geometry, material );
+    	obj.position.x = this.point[0]-10;
+    	obj.position.y = this.point[1]-10;
+    	obj.position.z = this.point[2]-10;
+	scene.add(obj);
 	//Draw the octree
 	this.octree.draw();
-	//Draw curent residential octant with different color
-	addCube([this.residingOctant.x/20,this.residingOctant.y/20,this.residingOctant.z/20],[this.residingOctant.width/20,this.residingOctant.width/20,this.residingOctant.width/20],0xFF8899);
 	//Draw visited octants with different color
+	for(var i = 0; i < this.visitedOctants.length; i++){
+		var oct = this.visitedOctants[i];
+		addCube([oct.x/20,oct.y/20,oct.z/20],[oct.width/20,oct.width/20,oct.width/20],0x00ff00);
+	}
+	//Draw curent residential octant with different color
+	addCube([this.residingOctant.x/20,this.residingOctant.y/20,this.residingOctant.z/20],[this.residingOctant.width/20,this.residingOctant.width/20,this.residingOctant.width/20],0xff00ff);
 	
 	//Draw a sphere showing current search radius
+	var sphereGeom =  new THREE.SphereGeometry( this.nearestDistance, 32, 16 );
+	
+	// overlapping translucent red/green/blue spheres
+	var redMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, transparent: true, opacity: 0.2 } );
+	var sphere = new THREE.Mesh( sphereGeom.clone(), redMaterial );
+	sphere.position.set(this.point[0]-10, this.point[1]-10,this.point[2]-10);
+	scene.add( sphere );	
 	
 	//Draw current nearest point with different color
+				var geometry = new THREE.SphereGeometry( 0.3, 8, 6 );
+    	var material = new THREE.MeshLambertMaterial( { color: new THREE.Color(0x66ffff) } );
+    	var obj = new THREE.Mesh( geometry, material );
+    	obj.position.x = this.nearestPoint[0]-10;
+    	obj.position.y = this.nearestPoint[1]-10;
+    	obj.position.z = this.nearestPoint[2]-10;
+	scene.add(obj);
+	
 }
 
 //Single step of NN
@@ -160,6 +194,7 @@ OctTreeNearestNeighbor.prototype.doStep = function(){
 				}
 			}
 		}
+		this.searchOctant = this.residingOctant;
 		return true;
 	}
 	//Siin mingit huina muinat vaja teha
@@ -168,19 +203,18 @@ OctTreeNearestNeighbor.prototype.doStep = function(){
 		return true;
 	}
 	
-	//Ei käi kõike läbi... vajab uurimist.
-	while(this.residingOctant.Parent != null){
-		var Parent = this.residingOctant.Parent;
+	while(this.searchOctant.Parent != null){
+		var Parent = this.searchOctant.Parent;
 		for(var i = 0; i < Parent.children.length; i++){
 			var node = Parent.children[i];
 			if(this.visitedOctants.indexOf(node) == -1 && distanceTo(node,this.point) < this.nearestDistance){
 				if(this.checkOctant(node)){
-					this.residingOctant = node;
+					this.searchOctant = node;
 					return true;
 				}
 			}
 		}
-		this.residingOctant = Parent;
+		this.searchOctant = Parent;
 	}
 	//Tagasta midagi, et teaks et on lähim leitud.
 	return false
