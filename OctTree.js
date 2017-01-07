@@ -4,9 +4,12 @@ var OctTree = function(x, y, z, width, objects, Parent = null){
 	this.y = y;
 	this.z = z;
 	this.width = width;
+	//Octants
 	this.children = [];
+	//Points
 	this.objects = objects;
 	this.MAX_OBJECTS = 1;
+	//Parent octant
 	this.Parent = Parent;
 }
 
@@ -56,7 +59,7 @@ OctTree.prototype.doStep = function(){
 		this.children[6] = new OctTree(this.x, this.y+this.width/2, this.z+this.width/2, this.width/2, [], this);
 		this.children[7] = new OctTree(this.x+this.width/2, this.y+this.width/2, this.z+this.width/2, this.width/2,[ ], this);
 
-		
+		//Deep copy array
 		var temp = JSON.parse(JSON.stringify(this.objects));
 		
 		this.objects = []
@@ -66,6 +69,7 @@ OctTree.prototype.doStep = function(){
 		}
 		return true;
 	} else {
+		//Do a single octree construction step
 		for(var i = 0; i < this.children.length; i++){
 			if(this.children[i].doStep()){
 				return true;
@@ -90,6 +94,8 @@ var OctTreeNearestNeighbor = function(octree, point){
 	this.nearestPoint = null;
 	this.visitedOctants = [];
 }
+
+//Distance from ourpoint to octant
 function distanceTo(node, point){
 	var x,y,z;
 	
