@@ -1,0 +1,48 @@
+//Find the position of 'value' between min and max.
+//if value == min, 0 is returned; if value == max, 1 is returned
+//otherwise it's inbetween 0 and 1
+function lerpPoint(value, min, max) {
+	return 1 - (max - value)/(max - min);
+}
+
+function pointSpaceTo2DRenderSpace(point) {
+    x = lerpPoint(point[0], minX, maxX) * width;
+    y = lerpPoint(point[1], minX, maxX) * width;
+    z = lerpPoint(point[2], minX, maxX) * width;
+    
+    return [x, y, z]
+}
+
+function pointSpaceTo3DRenderSpace(point) {
+    x = (lerpPoint(point[0], minX, maxX)*2 - 1) * 10;
+    y = (lerpPoint(point[1], minY, maxY)*2 - 1) * 10;
+    z = (lerpPoint(point[2], minZ, maxZ)*2 - 1) * 10;
+    
+    return [x, y, z]
+}
+
+function pointSpaceSizeTo3DRenderSpaceSize(point) {
+    x = lerpPoint(point[0], minX, maxX)*20;
+    y = lerpPoint(point[1], minY, maxY)*20;
+    z = lerpPoint(point[2], minZ, maxZ)*20;
+    
+    return [x, y, z]
+}
+
+//Not in active use functions
+function getPixel(image, x, y) {
+	return image.data[(y * image.width + x) * 4];
+}
+
+function setPixel(image, x, y, v) {
+	image.data[(y * image.width + x) * 4] = v;
+	image.data[(y * image.width + x) * 4 + 1] = v;
+	image.data[(y * image.width + x) * 4 + 2] = v;
+}
+
+function setPixelRGB(image, x, y, r, g, b) {
+	image.data[(y * image.width + x) * 4] = r;
+	image.data[(y * image.width + x) * 4 + 1] = g;
+	image.data[(y * image.width + x) * 4 + 2] = b;
+}
+
