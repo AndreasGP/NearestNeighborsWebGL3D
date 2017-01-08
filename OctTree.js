@@ -15,10 +15,11 @@ var OctTree = function (x, y, z, width, objects, Parent) {
 
 //Checks if a given point exsists within this octree/octant
 //Point is expected to be a 3 element array [X, Y, Z]
+//Somekind of precision error.
 OctTree.prototype.contains = function (point) {
-    return point[0] > this.x && point[0] <= this.x + this.width
-            && point[1] > this.y && point[1] <= this.y + this.width
-            && point[2] > this.z && point[2] <= this.z + this.width;
+    return point[0] > this.x && point[0] <= this.x + this.width[0]
+            && point[1] > this.y && point[1] <= this.y + this.width[1]
+            && point[2] > this.z && point[2] <= this.z + this.width[2];
 }
 
 //Add object to the current octree's/octant's children 
@@ -34,7 +35,7 @@ OctTree.prototype.addObject = function (object) {
 //Render octree
 OctTree.prototype.draw = function () {
     //Render self
-    drawCube([this.x, this.y, this.z], [this.width, this.width, this.width], 0xFF5555);
+    drawCube([this.x, this.y, this.z], this.width, 0xFF5555);
     //Render children
     for (var i = 0; i < this.children.length; i++) {
         this.children[i].draw();
@@ -44,14 +45,14 @@ OctTree.prototype.draw = function () {
 //A single step of octree building
 OctTree.prototype.doStep = function () {
     if (this.objects.length > this.MAX_OBJECTS) {
-        this.children[0] = new OctTree(this.x, this.y, this.z, this.width / 2, [], this);
-        this.children[1] = new OctTree(this.x + this.width / 2, this.y, this.z, this.width / 2, [], this);
-        this.children[2] = new OctTree(this.x, this.y, this.z + this.width / 2, this.width / 2, [], this);
-        this.children[3] = new OctTree(this.x + this.width / 2, this.y, this.z + this.width / 2, this.width / 2, [], this);
-        this.children[4] = new OctTree(this.x, this.y + this.width / 2, this.z, this.width / 2, [], this);
-        this.children[5] = new OctTree(this.x + this.width / 2, this.y + this.width / 2, this.z, this.width / 2, [], this);
-        this.children[6] = new OctTree(this.x, this.y + this.width / 2, this.z + this.width / 2, this.width / 2, [], this);
-        this.children[7] = new OctTree(this.x + this.width / 2, this.y + this.width / 2, this.z + this.width / 2, this.width / 2, [], this);
+        this.children[0] = new OctTree(this.x, this.y, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[1] = new OctTree(this.x + this.width[0] / 2, this.y, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[2] = new OctTree(this.x, this.y, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[3] = new OctTree(this.x + this.width[0] / 2, this.y, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[4] = new OctTree(this.x, this.y + this.width[1] / 2, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[5] = new OctTree(this.x + this.width[0] / 2, this.y + this.width[1] / 2, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[6] = new OctTree(this.x, this.y + this.width / 2, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[7] = new OctTree(this.x + this.width[0] / 2, this.y + this.width[1] / 2, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
 
         //Deep copy array
         var temp = JSON.parse(JSON.stringify(this.objects));
@@ -93,28 +94,29 @@ var OctTreeNearestNeighbor = function (octree, point) {
 function distanceTo(node, point) {
     var x, y, z;
 
-    if (Math.abs(node.x - point[0]) < Math.abs(node.x + node.width - point[0])) {
+    if (Math.abs(node.x - point[0]) < Math.abs(node.x + node.width[0] - point[0])) {
         x = node.x;
     } else {
-        x = node.x + node.width;
+        x = node.x + node.width[0];
     }
 
-    if (Math.abs(node.y - point[1]) < Math.abs(node.y + node.width - point[1])) {
+    if (Math.abs(node.y - point[1]) < Math.abs(node.y + node.width[1] - point[1])) {
         y = node.y;
     } else {
-        y = node.y + node.width;
+        y = node.y + node.width[1];
     }
 
-    if (Math.abs(node.z - point[2]) < Math.abs(node.z + node.width - point[2])) {
+    if (Math.abs(node.z - point[2]) < Math.abs(node.z + node.width[2] - point[2])) {
         z = node.z;
     } else {
-        z = node.z + node.width;
+        z = node.z + node.width[2];
     }
 
     return Math.min(Math.abs(point[0] - x), Math.abs(point[1] - y), Math.abs(point[2] - z));
 }
 
 //Check the current octant for closest node inside that octant, if any excist.
+//Improve octand checking
 OctTreeNearestNeighbor.prototype.checkOctant = function (node) {
     if (this.nearestDistance == null) {
         this.nearestDistance = Infinity;
@@ -124,7 +126,7 @@ OctTreeNearestNeighbor.prototype.checkOctant = function (node) {
     if (points.length == 0 && node.children.length != 0) {
         for (var i = 0; i < node.children.length; i++) {
             if (distanceTo(node.children[i], this.point) < this.nearestDistance) {
-                return this.checkOctant(node.children[i])
+                change = this.checkOctant(node.children[i])
             }
         }
     } else if (points.length != 0) {
@@ -141,42 +143,38 @@ OctTreeNearestNeighbor.prototype.checkOctant = function (node) {
 }
 
 OctTreeNearestNeighbor.prototype.draw = function () {
-    var geometry = new THREE.SphereGeometry(0.3, 8, 6);
-    var material = new THREE.MeshLambertMaterial({color: new THREE.Color(0xffffff)});
-    var obj = new THREE.Mesh(geometry, material);
-    obj.position.x = this.point[0] - 10;
-    obj.position.y = this.point[1] - 10;
-    obj.position.z = this.point[2] - 10;
-    scene.add(obj);
+	
+	var pointCoord = pointSpaceTo3DRenderSpace(this.point);
+	var nearestCoord = pointSpaceTo3DRenderSpace(this.nearestPoint);
     //Draw the octree
     this.octree.draw();
     //Draw visited octants with different color
     for (var i = 0; i < this.visitedOctants.length; i++) {
         var oct = this.visitedOctants[i];
-        drawCube([oct.x, oct.y, oct.z], [oct.width, oct.width, oct.width], 0x00ff00);
+        drawCube([oct.x, oct.y, oct.z], oct.width, 0x00ff00);
     }
     //Draw curent residential octant with different color
     var width = this.residingOctant.width
-    drawCube([this.residingOctant.x, this.residingOctant.y, this.residingOctant.z], [width, width, width], 0xff00ff);
+    drawCube([this.residingOctant.x, this.residingOctant.y, this.residingOctant.z], width, 0xff00ff);
 
     //Draw a sphere showing current search radius
-    var sphereGeom = new THREE.SphereGeometry(this.nearestDistance, 32, 16);
-
-    // overlapping translucent red/green/blue spheres
+    var sphereGeom = new THREE.SphereGeometry(dist(pointCoord,nearestCoord), 32, 16);
+    
+	// overlapping translucent red/green/blue spheres
     var redMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
     var sphere = new THREE.Mesh(sphereGeom.clone(), redMaterial);
-    sphere.position.set(this.point[0] - 10, this.point[1] - 10, this.point[2] - 10);
+    sphere.position.set(pointCoord[0],pointCoord[1],pointCoord[2]);
     scene.add(sphere);
-
+	
+	
     //Draw current nearest point with different color
     var geometry = new THREE.SphereGeometry(0.3, 8, 6);
-    var material = new THREE.MeshLambertMaterial({color: new THREE.Color(0x66ffff)});
+    var material = new THREE.MeshLambertMaterial({color: new THREE.Color(0xffff00)});
     var obj = new THREE.Mesh(geometry, material);
-    obj.position.x = this.nearestPoint[0] - 10;
-    obj.position.y = this.nearestPoint[1] - 10;
-    obj.position.z = this.nearestPoint[2] - 10;
+    obj.position.x = nearestCoord[0];
+    obj.position.y = nearestCoord[1];
+    obj.position.z = nearestCoord[2];
     scene.add(obj);
-
 }
 
 //Single step of NN
@@ -187,13 +185,15 @@ OctTreeNearestNeighbor.prototype.draw = function () {
 OctTreeNearestNeighbor.prototype.doStep = function () {
     if (!this.residingOctant) {
         this.residingOctant = this.octree;
-        while (this.residingOctant.children.length != 0) {
-            for (var i = 0; i < 8; i++) {
+		var limit = 10
+        while (this.residingOctant.children.length != 0 && limit > 0) {
+            for (var i = 0; i < this.residingOctant.children.length; i++) {
                 if (this.residingOctant.children[i].contains(this.point)) {
                     this.residingOctant = this.residingOctant.children[i];
                     break;
                 }
             }
+			limit = limit -1;
         }
         this.searchOctant = this.residingOctant;
         return true;
