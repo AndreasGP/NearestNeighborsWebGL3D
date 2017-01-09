@@ -32,10 +32,8 @@ var imgYZ = contextXY.getImageData(0, 0, width, width);
 function init3D() {
 	camera = new THREE.PerspectiveCamera( 70, width / width, 1, 5000 );
 
-	scene = new THREE.Scene();
-	var ambientLight = new THREE.AmbientLight(0x999999);
-	scene.add(ambientLight);
-
+        setupScene();
+        
 	renderer = new THREE.WebGLRenderer();
 	renderer.setClearColor( 0xdddddd )
 	renderer.setPixelRatio( width / width);
@@ -50,19 +48,26 @@ function init3D() {
 	controls.minDistance = 10;
 	controls.maxDistance = 35;
 
-	var axisHelper = new THREE.AxisHelper(5)
-	axisHelper.position.set(-10.5, -10.5, -10.5)
-	scene.add(axisHelper)
-
 	//Initial camera position
 	var angle = 5;
         var cameraRadius = 27
 	camera.position.set(Math.sin(angle) * cameraRadius, cameraRadius * 0.3 - 2, Math.cos(angle) * cameraRadius);
 	camera.lookAt(new THREE.Vector3(0, -2, 0));
         
-        //Draw the outline grid with some offset
-        var o = 0.1;
-        drawCube([minX - o/2, minY - o/2, minZ - o/2], [maxX - minX + o, maxY - minY + o, maxZ - minZ + o], 0x000000)
+}
+
+function setupScene() {
+    scene = new THREE.Scene();
+    var ambientLight = new THREE.AmbientLight(0x999999);
+    scene.add(ambientLight);
+
+    var axisHelper = new THREE.AxisHelper(5)
+    axisHelper.position.set(-10.5, -10.5, -10.5)
+    scene.add(axisHelper)
+
+    //Draw the outline grid with some offset
+    var o = 0.1;
+    drawCube([min - o / 2, min - o / 2, min - o / 2], [max - min + o, max - min + o, max - min + o], 0x000000)
 }
 
 function animate() {
@@ -113,9 +118,9 @@ function drawDataPoint(x, y, z) {
     drawSphereOn3D(renderPoint3D[0], renderPoint3D[1], renderPoint3D[2], r, g, b);
 }
 
-function drawSearchablePoint() {
+function drawSearchPoint() {
         //2D
-        var rPoint2D = pointSpaceTo2DRenderSpace(searchablePoint);
+        var rPoint2D = pointSpaceTo2DRenderSpace(searchPoint);
         var col1 = [255, 70, 0]//orange
         var col2 = [64, 224, 208]//cyan
         var smallRadius = 2;
@@ -144,7 +149,7 @@ function drawSearchablePoint() {
         var geometry = new THREE.SphereGeometry( radius, 8, 6 );
         var material = new THREE.MeshNormalMaterial();
     	var sphere = new THREE.Mesh( geometry, material );
-        var renderPoint3D = pointSpaceTo3DRenderSpace(searchablePoint)
+        var renderPoint3D = pointSpaceTo3DRenderSpace(searchPoint)
     	sphere.position.x = renderPoint3D[0];
     	sphere.position.y = renderPoint3D[1];
     	sphere.position.z = renderPoint3D[2];
@@ -199,40 +204,16 @@ function drawSphere(pos, radius, color, transparent, opacity) {
 /* END FUNCTIONS FOR RENDERING */
 
 /* BEGIN RENDERING CALLS AND MAIN LOGIC */
-function addDataPoints() {
+function clearEverything() {
+    setupScene();
+    //TODO: Clear 2D projections
+}
+
+function addDataPointsToRendering() {
     //Add the points to projections
     for(var index in points) {
         var point = points[index];
         drawDataPoint(point[0], point[1], point[2]);
     }
-}
-
-addDataPoints();
-drawSearchablePoint();
-
-	
-algorithm = null
-$( document ).ready(function() {
-	oct = new OctTree(0,0,0,[maxX-minX,maxY-minY,maxZ-minZ],points);
-	algorithm = oct
-	algorithm.buildTree();
-	nn = new OctTreeNearestNeighbor(oct, searchablePoint);
-	while(nn.doStep());
-	nn.draw();
-        
-    	//kd = new KDTree(0,0,0,20,20,20,0,points);
-        //algorithm = kd
-	//kd.draw();
-        
-        //TODO: Make it work with this
-        //doNextStep(algorithm)
-        //instead of this
-        //while(algorithm.doStep());
-});
-var doNextStep = function(){
-    var cont = algorithm.doStep()
-    if(cont) {
-        setTimeout(doNextStep, 500)
-    }
-}
+}	
 /* END RENDERING CALLS AND MAIN LOGIC */

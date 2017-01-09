@@ -1,125 +1,126 @@
 <html>
-<head>
-	<title>Advanced Algorithmics Project</title>
-	<link rel="stylesheet" href="bootstrap.min.css"></link>
-	<link rel="stylesheet" href="style.css"></link>
+    <head>
+        <title>NN 3D Search</title>
+        <link rel="stylesheet" href="bootstrap.min.css"></link>
+        <link rel="stylesheet" href="style.css"></link>
 
-	<script type="text/javascript" src="jquery-1.12.1.min.js"></script> 
-	<script type="text/javascript" src="bootstrap.min.js"></script>
-	<script type="text/javascript" src="three.min.js"></script> 
-	<script type="text/javascript" src="OrbitControls.js"></script>
-</head>
-<body>
-	<br>
-	<div class="container">
-		<div class="well">
-			<h1 class ="text-center">Nearest Neighbour Search 3D Visualization</h1>
-			<div class="bottom"></div>
-			<div>
-				<p>Coolbeans description here. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sit amet auctor lectus. Nam et urna diam. Nam sit amet porttitor erat, id volutpat libero. Nunc libero urna, laoreet porttitor pretium a, efficitur et velit. Nulla vel sapien sit amet augue dapibus condimentum. Sed laoreet sodales dolor, at tristique diam dignissim non. Praesent vel dui tincidunt, mattis tortor nec, blandit nibh. Curabitur lorem magna, mattis at justo vel, egestas bibendum nibh.</p>
-			</div>
-			<br>
-			<br>
-			<div class="row">
-				<div class="col-md-6">
-					<h3>1. Insert 3D data to be searched</h3>
-					<div class="col-md-12">
-					Use format "(0, 0, 0)", one point per line.
-					</div>
-					<div class="col-md-offset-2 col-md-8">
-						<textarea class="form-control" rows="5" id="comment"></textarea>
-					</div>
-					<div class=" col-md-offset-3 col-md-6">
-						<button type="button" class="btn btn-lg btn-primary center-block">Submit</button>
-					</div>
-				</div>
-				<div class="col-md-1">
-					<h1><strong>or</strong></h1>
-				</div>
-				<div class="col-md-4">
-					<h3>Generate random data</h3>
-					<div class="form-group  col-md-12">
-					  <label for="randomElementsCount">Number of elements:</label>
-					  <select class="form-control" id="randomElementsCount">
-					    <option>10</option>
-					    <option>25</option>
-					    <option>50</option>
-					    <option>100</option>
-					    <option>500</option>
-					    <option>1000</option>
-					    <option>5000</option>
-					  </select>
-					</div>
-					<div class=" col-md-offset-3 col-md-6">
-						<button type="button" class="btn btn-lg btn-primary">Generate</button>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-6">
-					<h3>2. Insert a point to be searched around</h3>
-					<div class="row">
-						<div class="col-md-offset-2 col-md-6 text-center">
-							Use format "(0, 0, 0)".
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-offset-1 col-md-8">
-							<input type="text" class="form-control" id="searchablePoint">
-						</div>
-					</div>
-				</div>
-				<div class="col-md-6">
-					<h3>3. Pick a search algorithm</h3>
-					<div class="row">
-						<div class="col-md-offset-2 col-md-8">
-							<select class="form-control">
-								<option value="octree">Octtree</option>
-								<option value="kdtree">KD-tree</option>
-							</select>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-offset-2 col-md-4">
-							<button type="button" class="btn btn-lg btn-primary center-block">Do step</button>
-						</div>
-						<div class="col-md-3">
-							<button type="button" class="btn btn-lg btn-primary center-block">Restart</button>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="text-center col-lg-12">
-					<font size="20">3D</font><br>
-					<div id="3D">
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="text-center col-lg-4">
-					<font size="20">XY</font><br>
-					<canvas id="XYcanvas" width="256" height="256">
-					</canvas>
-				</div>
-				<div class="text-center col-lg-4">
-					<font size="20">XZ</font><br>
-					<canvas id="XZcanvas" width="256" height="256">
-					</canvas>
-				</div>
-				<div class="text-center col-lg-4">
-					<font size="20">YZ</font><br>
-					<canvas id="YZcanvas" width="256" height="256">
-					</canvas>
-				</div>
-			</div>
-		</div>
-	</div>
-        
+        <script type="text/javascript" src="jquery-1.12.1.min.js"></script> 
+        <script type="text/javascript" src="bootstrap.min.js"></script>
+        <script type="text/javascript" src="three.min.js"></script> 
+        <script type="text/javascript" src="OrbitControls.js"></script>
+    </head>
+    <body>
+        <br>
+        <div class="container">
+            <div class="well">
+                <h1 class ="text-center">Nearest Neighbour Search in 3D Visualization</h1>
+                <div class="bottom"></div>
+                <div>
+                    <p>This application is designed to aid people with understanding nearest neighbour searches with KD-trees, Octtrees and random projection trees. Your browser needs to support WebGL for the 3D rendering to work.
+                </div>
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#tab_algorithms">Algorithms</a></li>
+                    <li><a data-toggle="tab" href="#tab_help">Help</a></li>
+                    <li><a data-toggle="tab" href="#tab_about">About</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="tab_algorithms" class="tab-pane fade in active">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h3>1. Choose the number of data points to use:</h3>
+                                <div class="form-group col-md-offset-1 col-md-8">
+                                    <select class="form-control" id="randomElementsCount">
+                                        <option>10</option>
+                                        <option>25</option>
+                                        <option>50</option>
+                                        <option>100</option>
+                                        <option>500</option>
+                                        <option>1000</option>
+                                    </select>
+                                </div>
+                                <div class="clearfix"></div>
+                                <h3>3. Pick an algorithm:</h3>
+                                <div class="row">
+                                    <div class="col-md-offset-1 col-md-8">
+                                        <select class="form-control" id="chosenalgorithm">
+                                            <option value="octree">Octtree</option>
+                                            <option value="kdtree">KD-tree</option>
+                                            <option value="rptree">Random Projections tree</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h3>2. Insert a point for which to find NN for or leave empty for a random point to be generated:</h3> 
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <input type="text" placeholder="x" class="form-control" id="searchX">
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <input type="text" placeholder="y" class="form-control" id="searchY">
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <input type="text" placeholder="z" class="form-control" id="searchZ">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h3>Algorithm output:</h3>
+                                <textarea class="form-control" rows="7" id="algortihmconsole"></textarea>
+                                <button type="button" class="btn btn-xs btn-danger pull-right" onclick="onConsoleClearClicked()">Clear</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <br>
+                            <div class="col-md-offset-2 col-md-4">
+                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onGenerateClicked()" >4. Generate</button>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onDoNextStepClicked()" >5. Do next step</button>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="text-center col-lg-12">
+                                <div id="3D">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="text-center col-lg-4">
+                                <font size="20">XY</font><br>
+                                <canvas id="XYcanvas" width="256" height="256">
+                                </canvas>
+                            </div>
+                            <div class="text-center col-lg-4">
+                                <font size="20">XZ</font><br>
+                                <canvas id="XZcanvas" width="256" height="256">
+                                </canvas>
+                            </div>
+                            <div class="text-center col-lg-4">
+                                <font size="20">YZ</font><br>
+                                <canvas id="YZcanvas" width="256" height="256">
+                                </canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab_help" class="tab-pane fade">
+                        <h3>HELP</h3>
+                        <p>TODO</p>
+                    </div>
+                    <div id="tab_about" class="tab-pane fade">
+                        <h3>About</h3>
+                        <p>This project was done for as the Algorithmics course project in the University of Tartu. TODO
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script type="text/javascript" src="helpers.js"></script>
-	<script type="text/javascript" src="input.js"></script>
-	<script type="text/javascript" src="visualizer.js"></script>
-	<script type="text/javascript" src="OctTree.js"></script> 
-	<script type="text/javascript" src="KDTree.js"></script> 
-</body>
+        <script type="text/javascript" src="input.js"></script>
+        <script type="text/javascript" src="visualizer.js"></script>
+        <script type="text/javascript" src="OctTree.js"></script> 
+        <script type="text/javascript" src="KDTree.js"></script> 
+    </body>
 </html>

@@ -1,63 +1,83 @@
-//TODO: Make this file read actual input from the UI
-
-var minX = minY = minZ = 10000;
-var maxX = maxY = maxZ = -10000;
+var min = 0;
+var max = 10;
 
 function generatePoints() {
     var points = [];
     
-    for(var i = 0; i < 50; i++) {
-	var x = Math.random() * 15 + 2;
-	var y = Math.random() * 15 + 2;
-	var z = Math.random() * 15 + 2;
+    var numberOfPoints = document.getElementById("randomElementsCount").value
+    
+    for(var i = 0; i < numberOfPoints; i++) {
+	var x = Math.random() * (max - min) + min;
+	var y = Math.random() * (max - min) + min;
+	var z = Math.random() * (max - min) + min;
 	points.push([x, y, z]);
     }
-
-    points.push([1, 1, 1]);
-    points.push([2, 1, 2]);
-    points.push([0, 3, 2]);
-    points.push([3, 2, 0]);
-    points.push([1, 3, 1]);
-    points.push([2, 0, 4]);
-    points.push([4, 0, 0]);
     
+    log(numberOfPoints + " random points generated.");
     return points;
 }
 
-function updateMinMax() {
-    	if(points.length == 0) {
-		console.log("No points provided!");
-		return;
-	}
-        minX = minY = minZ = 10000;
-        maxX = maxY = maxZ = -10000;
-        
-	for(var index in points) {
-		var point = points[index];
-		var x = point[0];
-		var y = point[1];
-		var z = point[2];
-
-		if(x < minX) minX = x;
-		if(y < minY) minY = y;
-		if(z < minZ) minZ = z;
-		if(x > maxX) maxX = x;
-		if(y > maxY) maxY = y;
-		if(z > maxZ) maxZ = z;
-	}
-}
-
-
-function getSearchablePoint() {
-    //TODO: read from UI
-    var x = Math.random() * (maxX - minX) + minX;
-    var y = Math.random() * (maxY - minY) + minY;
-    var z = Math.random() * (maxZ - minZ) + minZ;
+function onGenerateClicked() {
+    clearEverything();
     
-    return [x, y, z];
+    points = generatePoints();
+    
+    var algorithm = document.getElementById("chosenalgorithm").value
+    log("Chosen algorithm is " + algorithm +".");
+    
+    var x = document.getElementById("searchX").value;
+    var y = document.getElementById("searchY").value;
+    var z = document.getElementById("searchZ").value;
+    
+    if(x == "" || y == "" || z == "" || isNaN(x) || isNaN(y) || isNaN(z)) {
+        var x = Math.random() * (max - min) + min;
+        var y = Math.random() * (max - min) + min;
+        var z = Math.random() * (max - min) + min;
+    }
+    
+    searchPoint = [parseInt(x), parseInt(y), parseInt(z)];
+    
+    log("Searching for the nearest neighbour of point " + arrayPointToString(searchPoint) + ".");
+    
+    addDataPointsToRendering();
+    drawSearchPoint();
+    
+    
+    //TODO: Manage algorithm switching properly
+    oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
+    algorithm = oct
+    algorithm.buildTree();
+    nn = new OctTreeNearestNeighbor(oct, searchPoint);
+    while (nn.doStep());
+    nn.draw();
+
+    //kd = new KDTree(0,0,0,20,20,20,0,points);
+    //algorithm = kd
+    //kd.draw();
+
+    //TODO: Make it work with this
+    //doNextStep(algorithm)
+    //instead of this
+    //while(algorithm.doStep());
 }
 
-var points = generatePoints();
-updateMinMax();
 
-var searchablePoint = getSearchablePoint();
+
+var doNextStep = function(){
+    var cont = algorithm.doStep()
+    if(cont) {
+        setTimeout(doNextStep, 500)
+    }
+}
+
+function onDoNextStepClicked() {
+    log("Do next step pressed");
+}
+
+function onConsoleClearClicked() {
+    document.getElementById("algortihmconsole").value = "";
+}
+
+function log(text) {
+    document.getElementById("algortihmconsole").value += text + "\n";
+}

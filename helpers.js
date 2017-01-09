@@ -6,27 +6,33 @@ function lerpPoint(value, min, max) {
 }
 
 function pointSpaceTo2DRenderSpace(point) {
-    x = lerpPoint(point[0], minX, maxX) * width;
-    y = lerpPoint(point[1], minX, maxX) * width;
-    z = lerpPoint(point[2], minX, maxX) * width;
+    x = lerpPoint(point[0], min, max) * width;
+    y = lerpPoint(point[1], min, max) * width;
+    z = lerpPoint(point[2], min, max) * width;
     
     return [x, y, z]
 }
 
 function pointSpaceTo3DRenderSpace(point) {
-    x = (lerpPoint(point[0], minX, maxX)*2 - 1) * 10;
-    y = (lerpPoint(point[1], minY, maxY)*2 - 1) * 10;
-    z = (lerpPoint(point[2], minZ, maxZ)*2 - 1) * 10;
+    x = (lerpPoint(point[0], min, max)*2 - 1) * 10;
+    y = (lerpPoint(point[1], min, max)*2 - 1) * 10;
+    z = (lerpPoint(point[2], min, max)*2 - 1) * 10;
     
     return [x, y, z]
 }
 
 function pointSpaceSizeTo3DRenderSpaceSize(point) {
-    x = lerpPoint(point[0], minX, maxX)*20;
-    y = lerpPoint(point[1], minY, maxY)*20;
-    z = lerpPoint(point[2], minZ, maxZ)*20;
+    x = lerpPoint(point[0], min, max)*20;
+    y = lerpPoint(point[1], min, max)*20;
+    z = lerpPoint(point[2], min, max)*20;
     
     return [x, y, z]
+}
+
+function arrayPointToString(point) {
+    return "(" + +point[0].toFixed(2) + ", " 
+                + +point[1].toFixed(2) + ", " 
+                + +point[2].toFixed(2) + ")";
 }
 
 //Not in active use functions
