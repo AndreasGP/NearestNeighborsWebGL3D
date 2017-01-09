@@ -35,7 +35,10 @@ OctTree.prototype.addPoint = function (point) {
 OctTree.prototype.draw = function () {
     //Render self except for the root octant
     if(this.parent) {
-        drawCube([this.x, this.y, this.z], this.size, 0xFF5555);
+        if(this.cube) {
+            removeFromScene(this.cube);
+        }
+        this.cube = drawCube([this.x, this.y, this.z], this.size, 0xFF5555);
     }
     //Render children
     for (var i = 0; i < this.children.length; i++) {

@@ -177,6 +177,10 @@ function drawCube(pos, size, color) {
     return wireframe;
 }
 
+function removeFromScene(object) {
+    scene.remove(object);
+}
+
 function drawSphere(pos, radius, color, transparent, opacity) {
     var geometry = new THREE.SphereGeometry(radius, 20, 8);
     var material = new THREE.MeshBasicMaterial({
@@ -214,7 +218,7 @@ $( document ).ready(function() {
         while(algorithm.doStep());
         nn = new OctTreeNearestNeighbor(oct, searchablePoint);
 	while(nn.doStep());
-	nn.draw()
+	nn.draw();
         
     	//kd = new KDTree(0,0,0,20,20,20,0,points);
         //algorithm = kd
