@@ -192,10 +192,10 @@ drawSearchablePoint();
 	
 algorithm = null
 $( document ).ready(function() {
-    	oct = new OctTree(0,0,0,[maxX-minX,maxY-minY,maxZ-minZ],points);
-        algorithm = oct
-        while(algorithm.doStep());
-        nn = new OctTreeNearestNeighbor(oct, searchablePoint);
+	oct = new OctTree(0,0,0,[maxX-minX,maxY-minY,maxZ-minZ],points);
+	algorithm = oct
+	algorithm.buildTree();
+	nn = new OctTreeNearestNeighbor(oct, searchablePoint);
 	while(nn.doStep());
 	nn.draw()
         

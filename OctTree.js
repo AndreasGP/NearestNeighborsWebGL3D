@@ -17,9 +17,9 @@ var OctTree = function (x, y, z, width, objects, Parent) {
 //Point is expected to be a 3 element array [X, Y, Z]
 //Somekind of precision error.
 OctTree.prototype.contains = function (point) {
-    return point[0] > this.x && point[0] <= this.x + this.width[0]
-            && point[1] > this.y && point[1] <= this.y + this.width[1]
-            && point[2] > this.z && point[2] <= this.z + this.width[2];
+    return point[0] >= this.x && point[0] <= this.x + this.width[0]
+            && point[1] >= this.y && point[1] <= this.y + this.width[1]
+            && point[2] >= this.z && point[2] <= this.z + this.width[2];
 }
 
 //Add object to the current octree's/octant's children 
@@ -42,17 +42,25 @@ OctTree.prototype.draw = function () {
     }
 }
 
-//A single step of octree building
-OctTree.prototype.doStep = function () {
+//Build the full octree
+OctTree.prototype.buildTree = function () {
     if (this.objects.length > this.MAX_OBJECTS) {
-        this.children[0] = new OctTree(this.x, this.y, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
-        this.children[1] = new OctTree(this.x + this.width[0] / 2, this.y, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
-        this.children[2] = new OctTree(this.x, this.y, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
-        this.children[3] = new OctTree(this.x + this.width[0] / 2, this.y, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
-        this.children[4] = new OctTree(this.x, this.y + this.width[1] / 2, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
-        this.children[5] = new OctTree(this.x + this.width[0] / 2, this.y + this.width[1] / 2, this.z, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
-        this.children[6] = new OctTree(this.x, this.y + this.width / 2, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
-        this.children[7] = new OctTree(this.x + this.width[0] / 2, this.y + this.width[1] / 2, this.z + this.width[2] / 2, [this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[0] = new OctTree(this.x, this.y, this.z, 
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[1] = new OctTree(this.x + this.width[0] / 2, this.y, this.z, 
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[2] = new OctTree(this.x, this.y, this.z + this.width[2] / 2, 
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[3] = new OctTree(this.x + this.width[0] / 2, this.y, this.z + this.width[2] / 2, 
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[4] = new OctTree(this.x, this.y + this.width[1] / 2, this.z,
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[5] = new OctTree(this.x + this.width[0] / 2, this.y + this.width[1] / 2, this.z,
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[6] = new OctTree(this.x, this.y + this.width[1] / 2, this.z + this.width[2] / 2,
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
+        this.children[7] = new OctTree(this.x + this.width[0] / 2, this.y + this.width[1] / 2, this.z + this.width[2] / 2,
+			[this.width[0] / 2,this.width[1] / 2,this.width[2] / 2], [], this);
 
         //Deep copy array
         var temp = JSON.parse(JSON.stringify(this.objects));
@@ -62,17 +70,11 @@ OctTree.prototype.doStep = function () {
         for (var i = 0; i < temp.length; i++) {
             this.addObject(temp[i]);
         }
-        return true;
-    } else {
-        //Do a single octree construction step
-        for (var i = 0; i < this.children.length; i++) {
-            if (this.children[i].doStep()) {
-                return true;
-            }
-        }
+		
+		for(var i = 0; i < this.children.length; i++){
+			this.children[i].buildTree();
+		}
     }
-    //Done, no more partitioning needed
-    return false;
 }
 
 var dist = function (p1, p2) {
@@ -185,7 +187,7 @@ OctTreeNearestNeighbor.prototype.draw = function () {
 OctTreeNearestNeighbor.prototype.doStep = function () {
     if (!this.residingOctant) {
         this.residingOctant = this.octree;
-		var limit = 10
+		var limit = 40
         while (this.residingOctant.children.length != 0 && limit > 0) {
             for (var i = 0; i < this.residingOctant.children.length; i++) {
                 if (this.residingOctant.children[i].contains(this.point)) {
