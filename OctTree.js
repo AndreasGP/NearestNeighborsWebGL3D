@@ -98,27 +98,11 @@ var OctTreeNearestNeighbor = function (octree, point) {
 
 //Distance from ourpoint to octant
 function distanceTo(node, point) {
-    var x, y, z;
-
-    if (Math.abs(node.x - point[0]) < Math.abs(node.x + node.size[0] - point[0])) {
-        x = node.x;
-    } else {
-        x = node.x + node.size[0];
-    }
-
-    if (Math.abs(node.y - point[1]) < Math.abs(node.y + node.size[1] - point[1])) {
-        y = node.y;
-    } else {
-        y = node.y + node.size[1];
-    }
-
-    if (Math.abs(node.z - point[2]) < Math.abs(node.z + node.size[2] - point[2])) {
-        z = node.z;
-    } else {
-        z = node.z + node.size[2];
-    }
-
-    return Math.min(Math.abs(point[0] - x), Math.abs(point[1] - y), Math.abs(point[2] - z));
+    var
+		x = Math.min(node.x - point[0], node.x + node.size[0] - point[0]),
+		y = Math.min(node.y - point[1], node.y + node.size[1] - point[1]),
+		z = Math.min(node.z - point[2], node.z + node.size[2] - point[2]);
+    return Math.min(Math.abs(x), Math.abs(y), Math.abs(z));
 }
 
 //Check the current octant for closest node inside that octant, if any excist.
@@ -184,20 +168,18 @@ OctTreeNearestNeighbor.prototype.draw = function () {
 OctTreeNearestNeighbor.prototype.doStep = function () {
     if (!this.residingOctant) {
         this.residingOctant = this.octree;
-		var limit = 40
-        while (this.residingOctant.children.length != 0 && limit > 0) {
+        while (this.residingOctant.children.length != 0) {
             for (var i = 0; i < this.residingOctant.children.length; i++) {
                 if (this.residingOctant.children[i].contains(this.point)) {
                     this.residingOctant = this.residingOctant.children[i];
                     break;
                 }
             }
-			limit = limit -1;
         }
         this.searchOctant = this.residingOctant;
         return true;
     }
-    //Siin mingit huina muinat vaja teha
+	
     if (!this.nearestDistance) {
         this.checkOctant(this.residingOctant);
         return true;
