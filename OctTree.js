@@ -177,12 +177,18 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
                 }
             }
         }
+		log("Found octant where point " + "siia punkt" + "resides.");
         this.searchOctant = this.residingOctant;
         return true;
     }
 	
     if (!this.nearestDistance) {
         this.checkOctant(this.residingOctant);
+		if(this.nearestDistance != Infinity){
+			log("Current nearest point is " + "POINT" + "at a distance of" + "DISTANCE");
+		}else{
+			log("No points in residing octant.");
+		}
         return true;
     }
 
@@ -193,6 +199,7 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
             if (this.visitedOctants.indexOf(node) == -1 && distanceTo(node, this.point) < this.nearestDistance) {
                 if (this.checkOctant(node)) {
                     this.searchOctant = node;
+					log("New nearest point is " + "POINT" + "at a distance of" + "DISTANCE");
                     return true;
                 }
             }
@@ -200,5 +207,6 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
         this.searchOctant = parent;
     }
     //Tagasta midagi, et teaks et on lähim leitud.
+	log("Final nearest point is " + "POINT" + "at a distance of" + "DISTANCE");
     return false
 }
