@@ -148,7 +148,8 @@ OctTreeNearestNeighbor.prototype.draw = function () {
     drawCube([this.residingOctant.x, this.residingOctant.y, this.residingOctant.z], size, 0xff00ff);
 
     //Draw a sphere showing current search radius
-    drawSphere(pointCoord, dist(pointCoord,nearestCoord), 0xff0000, true, 0.2);
+    //drawSphere(pointCoord, dist(pointCoord,nearestCoord), 0xff0000, true, 0.2);
+    updateSearchRadius(dist(pointCoord, nearestCoord));
 	
     //Draw current nearest point with different color
     var geometry = new THREE.SphereGeometry(0.3, 8, 6);
