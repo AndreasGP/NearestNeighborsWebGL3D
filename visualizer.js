@@ -214,38 +214,32 @@ function updateSearchRadius(radius) {
     radiusSphere = drawSphere(searchPoint, radius, 0xff0000, true, 0.2);
 }
 
-//Only supports convex shapes, 3 vertices minimum. Vertices have to be ordered properly.
+//Only supports convex shapes, 3 vertices minimum.
 //Example:
-//drawPolygon([[2, 0, 0], [2, 5, 0], [2, 5, 8], [2, 3, 9], [2, 0, 8]], 0xff0000, 0xaa0000, true, 0.2);
+//drawPolygon([[2, 0, 0], [2, 5, 0], [2, 5, 8], [2, 0, 8], [2, 3, 9]], 0xff0000, 0xaa0000, true, 0.2);
 function drawPolygon(vertices, fillColor, edgeColor, transparent, opacity) {
     var material = new THREE.MeshBasicMaterial({
         color: fillColor,
-        side: THREE.DoubleSide,
         transparent: transparent,
         opacity: opacity
     });
-    var geometry = new THREE.Geometry();
+    var verts = new Array();
 
     for(var i = 0; i < vertices.length; i++) {
         var renderP = pointSpaceTo3DRenderSpace(vertices[i]);
         var vec = new THREE.Vector3(renderP[0], renderP[1], renderP[2]);
-        console.log(vec);
-        geometry.vertices.push(vec);
+        verts.push(vec);
     }
-    
-    for (var i = 1; i < vertices.length - 1; i++) {        
-        var face = new THREE.Face3(0, i, i + 1);
-        geometry.faces.push(face);
-    }
-
-    mesh = new THREE.Mesh(geometry, material);
+   
+    var convexGeometry = new THREE.ConvexGeometry(verts);
+    mesh = new THREE.Mesh(convexGeometry, material);
     scene.add(mesh);
     
     //Reusing the same variables
     var material = new THREE.LineBasicMaterial({
         color: edgeColor
     });
-    var geometry = new THREE.EdgesGeometry(geometry);
+    var geometry = new THREE.EdgesGeometry(convexGeometry);
     var outline = new THREE.LineSegments(geometry, material);
     scene.add(outline);
     
