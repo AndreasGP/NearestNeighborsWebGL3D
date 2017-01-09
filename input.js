@@ -16,13 +16,13 @@ function generatePoints() {
     log(numberOfPoints + " random points generated.");
     return points;
 }
-
+var algorithm;
 function onGenerateClicked() {
     clearEverything();
     
     points = generatePoints();
     
-    var algorithm = document.getElementById("chosenalgorithm").value
+    algorithm = document.getElementById("chosenalgorithm").value
     log("Chosen algorithm is " + algorithm +".");
     
     var x = document.getElementById("searchX").value;
@@ -46,9 +46,10 @@ function onGenerateClicked() {
     //TODO: Manage algorithm switching properly
     oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
     oct.buildTree();
+	oct.draw();
     algorithm = new OctTreeNearestNeighbor(oct, searchPoint);
-    while (algorithm.doStep());
-    algorithm.draw();
+//    while (algorithm.doStep());
+//    algorithm.draw();
 
     //kd = new KDTree(0,0,0,20,20,20,0,points);
     //algorithm = kd
@@ -63,14 +64,19 @@ function onGenerateClicked() {
 
 
 var doNextStep = function(){
+	clearEverything();
+	addDataPointsToRendering();
+    drawSearchPoint();
     var cont = algorithm.doStep()
+	algorithm.draw();
     if(cont) {
-        setTimeout(doNextStep, 500)
+        setTimeout(doNextStep, 1000)
     }
 }
 
 function onDoNextStepClicked() {
     log("Do next step pressed");
+	doNextStep();
 }
 
 function onConsoleClearClicked() {

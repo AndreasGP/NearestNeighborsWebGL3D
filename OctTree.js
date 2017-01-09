@@ -98,11 +98,26 @@ var OctTreeNearestNeighbor = function (octree, point) {
 
 //Distance from ourpoint to octant
 function distanceTo(node, point) {
-    var
-		x = Math.min(node.x - point[0], node.x + node.size[0] - point[0]),
-		y = Math.min(node.y - point[1], node.y + node.size[1] - point[1]),
-		z = Math.min(node.z - point[2], node.z + node.size[2] - point[2]);
-    return Math.min(Math.abs(x), Math.abs(y), Math.abs(z));
+	var dmin = 0;
+	if(point[0] < node.x){
+		dmin += Math.pow(point[0] - node.x, 2);
+	} else if (point[0] > node.x+node.size[0]) {
+        dmin += Math.pow(point[0] - node.x+node.size[0], 2);
+    }
+	
+	if(point[1] < node.y){
+		dmin += Math.pow(point[1] - node.y, 2);
+	} else if (point[1] > node.y+node.size[1]) {
+        dmin += Math.pow(point[1] - node.y+node.size[1], 2);
+    }
+	
+	if(point[2] < node.z){
+		dmin += Math.pow(point[2] - node.z, 2);
+	} else if (point[2] > node.z+node.size[2]) {
+        dmin += Math.pow(point[2] - node.z+node.size[2], 2);
+    }
+	
+    return dmin;
 }
 
 //Check the current octant for closest node inside that octant, if any excist.
@@ -111,12 +126,16 @@ OctTreeNearestNeighbor.prototype.checkOctant = function (node) {
     if (this.nearestDistance == null) {
         this.nearestDistance = Infinity;
     }
+	
     var points = node.points;
     var change = false;
     if (points.length == 0 && node.children.length != 0) {
         for (var i = 0; i < node.children.length; i++) {
-            if (distanceTo(node.children[i], this.point) < this.nearestDistance) {
-                change = this.checkOctant(node.children[i])
+			console.log(distanceTo(node.children[i], this.point))
+			console.log(this.nearestDistance)
+            if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedOctants.indexOf(node.children[i]) == -1) {
+                change = this.checkOctant(node.children[i]);
+				return change;
             }
         }
     } else if (points.length != 0) {
@@ -127,17 +146,19 @@ OctTreeNearestNeighbor.prototype.checkOctant = function (node) {
                 change = true;
             }
         }
+		this.visitedOctants.push(node);
+		this.searchOctant = node;
+		return change;
     }
-    this.visitedOctants.push(node);
+	this.visitedOctants.push(node);
+	this.searchOctant = node;
     return change;
 }
 
 OctTreeNearestNeighbor.prototype.draw = function () {
 	
-	var pointCoord = pointSpaceTo3DRenderSpace(this.point);
-	var nearestCoord = pointSpaceTo3DRenderSpace(this.nearestPoint);
-    //Draw the octree
-    this.octree.draw();
+	//Draw the octree
+	this.octree.draw();
     //Draw visited octants with different color
     for (var i = 0; i < this.visitedOctants.length; i++) {
         var oct = this.visitedOctants[i];
@@ -146,7 +167,13 @@ OctTreeNearestNeighbor.prototype.draw = function () {
     //Draw curent residential octant with different color
     var size = this.residingOctant.size
     drawCube([this.residingOctant.x, this.residingOctant.y, this.residingOctant.z], size, 0xff00ff);
-
+	
+	var size = this.searchOctant.size
+    drawCube([this.searchOctant.x, this.searchOctant.y, this.searchOctant.z], size, 0x00ffff);
+	
+	var pointCoord = pointSpaceTo3DRenderSpace(this.point);
+	if(this.nearestPoint == null) return;
+	var nearestCoord = pointSpaceTo3DRenderSpace(this.nearestPoint);
     //Draw a sphere showing current search radius
     drawSphere(pointCoord, dist(pointCoord,nearestCoord), 0xff0000, true, 0.2);
 	
@@ -176,7 +203,7 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
                 }
             }
         }
-		log("Found octant where point " + "siia punkt" + "resides.");
+		log("Found octant where point " + "POINT" + " resides.");
         this.searchOctant = this.residingOctant;
         return true;
     }
@@ -184,28 +211,31 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
     if (!this.nearestDistance) {
         this.checkOctant(this.residingOctant);
 		if(this.nearestDistance != Infinity){
-			log("Current nearest point is " + "POINT" + "at a distance of" + "DISTANCE");
+			log("Current nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
 		}else{
 			log("No points in residing octant.");
 		}
         return true;
     }
-
-    while (this.searchOctant.parent != null) {
-        var parent = this.searchOctant.parent;
-        for (var i = 0; i < parent.children.length; i++) {
-            var node = parent.children[i];
-            if (this.visitedOctants.indexOf(node) == -1 && distanceTo(node, this.point) < this.nearestDistance) {
+	
+	if(this.searchOctant.parent != null){
+		var parent = this.searchOctant.parent;
+		for(var i = 0; i < parent.children.length; i++){
+			var node = parent.children[i];
+			if (this.visitedOctants.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {
                 if (this.checkOctant(node)) {
-                    this.searchOctant = node;
-					log("New nearest point is " + "POINT" + "at a distance of" + "DISTANCE");
-                    return true;
-                }
+					log("New nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+                }else{
+					log("No points in current octant.");
+				}
+				return true;
             }
-        }
-        this.searchOctant = parent;
-    }
+		}
+		this.searchOctant = parent;
+		return true;
+	}
+
     //Tagasta midagi, et teaks et on lähim leitud.
-	log("Final nearest point is " + "POINT" + "at a distance of" + "DISTANCE");
+	log("Final nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
     return false
 }
