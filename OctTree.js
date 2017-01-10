@@ -14,7 +14,7 @@ var OctTree = function (x, y, z, size, points, parent) {
 
 //Checks if a given point exsists within this octree/octant
 //Point is expected to be a 3 element array [X, Y, Z]
-//Somekind of precision error.
+//Some kind of precision error.
 OctTree.prototype.contains = function (point) {
     return point[0] >= this.x && point[0] <= this.x + this.size[0]
             && point[1] >= this.y && point[1] <= this.y + this.size[1]

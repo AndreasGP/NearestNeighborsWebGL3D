@@ -44,17 +44,18 @@ function onGenerateClicked() {
     
     
     //TODO: Manage algorithm switching properly
-    oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
+    /*oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
     oct.buildTree();
 	oct.draw();
-    algorithm = new OctTreeNearestNeighbor(oct, searchPoint);
+    algorithm = new OctTreeNearestNeighbor(oct, searchPoint);*/
 //    while (algorithm.doStep());
 //    algorithm.draw();
-
-    //kd = new KDTree(0,0,0,20,20,20,0,points);
-    //algorithm = kd
-    //kd.draw();
-
+    
+    kd = new KDTree(0, 0, 0, [max - min, max - min, max - min], 0, points);
+    kd.buildTree();
+	kd.draw();
+    //algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
+	
     //TODO: Make it work with this
     //doNextStep(algorithm)
     //instead of this
