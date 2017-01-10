@@ -246,6 +246,27 @@ function drawPolygon(vertices, fillColor, edgeColor, transparent, opacity) {
     return [mesh, outline]
 }
 
+function drawPolygonV3(vertices, fillColor, edgeColor, transparent, opacity) {
+    var material = new THREE.MeshBasicMaterial({
+        color: fillColor,
+        transparent: transparent,
+        opacity: opacity
+    });
+    var convexGeometry = new THREE.ConvexGeometry(vertices);
+    mesh = new THREE.Mesh(convexGeometry, material);
+    scene.add(mesh);
+    
+    //Reusing the same variables
+    var material = new THREE.LineBasicMaterial({
+        color: edgeColor
+    });
+    var geometry = new THREE.EdgesGeometry(convexGeometry);
+    var outline = new THREE.LineSegments(geometry, material);
+    scene.add(outline);
+    
+    return [mesh, outline]
+}
+
 function removeFromScene(object) {
     scene.remove(object);
 }
