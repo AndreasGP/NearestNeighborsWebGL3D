@@ -120,6 +120,17 @@ RPTree.prototype.test = function (x, y, z) {
 
         scene.add(obj);
     }
+    
+RPTree.prototype.testWithColour = function (x, y, z, colour) {
+        var geometry = new THREE.SphereGeometry( 0.3, 8, 6 );
+        var material = new THREE.MeshLambertMaterial( { color: colour} );
+        var obj = new THREE.Mesh( geometry, material );
+        obj.position.x = x;
+        obj.position.y = y;
+        obj.position.z = z;
+
+        scene.add(obj);
+    }
 
 RPTree.prototype.createLine = function() {
     var indices = this.genRand(0,this.objects.length-1,2);
@@ -195,17 +206,20 @@ RPTree.prototype.partition = function() {
     var convexGeometry = new THREE.ConvexGeometry(intersectionPoints);
     var verts = convexGeometry.vertices;
     
-    var planeLines = [];
-    for(var k in verts){
-        var i = (k+1)%verts.length;
-        planeLines.push(new THREE.Line3(verts[k],verts[i]))
+    var pointsToMap = []
+    for (var k in verts){
+        pointsToMap.push(verts[k].clone())
     }
+    var planeLines = this.GrahamScan(pointsToMap);
     
     for(var k in planeLines){
         beyondPlaneBounds.push(planeLines[k]);
         otherBounds.push(planeLines[k]);
+        console.log(k)
+        
         this.visualizeLine(planeLines[k]);
     }
+    console.log("-----")
     
     for(var k in this.objects){
         var pt = this.objects[k];
@@ -219,7 +233,140 @@ RPTree.prototype.partition = function() {
     this.children.push(new RPTree(otherPoints,otherBounds));
 };
 
+RPTree.prototype.LinearTransformation = function(points) {
+        if(!points.length > 3){
+        return;
+    }
+    var z = new THREE.Vector3(0,0,0);
+    
+    var p1 = points[0];
+    var p2 = points[1];
+    
+    var v1 = this.splittingVector.clone().normalize();
+    
+    var v2 = new THREE.Vector3();
+    v2.subVectors(p2,p1).normalize();
+    
+    var v3 = new THREE.Vector3();
+    v3.crossVectors(v1,v2).normalize();
+    
+    var line1 = new THREE.Line3(z,v1);
+    var line2 = new THREE.Line3(z,v2);
+    var line3 = new THREE.Line3(z,v3);
+    /*
+     * //Uncomment to show image basis
+    this.visualizeLine(line1);
+    this.visualizeLine(line2);
+    this.visualizeLine(line3);
+    */
+    
+    var transformationMatrix = new THREE.Matrix3();
+    var base = new THREE.Matrix3();
+    base.identity();
+    
+    transformationMatrix.set(
+            v1.x,v1.y,v1.z,
+            v2.x,v2.y,v2.z,
+            v3.x,v3.y,v3.z);
+    
+    var inv = new THREE.Matrix3();
+    inv.getInverse(transformationMatrix,true);
+    inv.transpose();
+    
+    var mappedPoints = [];
+    var restoreMap = new Map();
+    
+    for (var k in points){
+        var p = points[k];
+        var mp = p.clone().applyMatrix3(inv);
+        restoreMap.set(mp,p);
+        var r = restoreMap.get(mp);
+        mappedPoints.push(mp);
+    }
+    
+    
+    
+    //Uncomment this if you want to see the transformed image of the plane.
+    //var colour = 0xf4b042;
+    //drawPolygonV3(mappedPoints,colour, colour, true, 0.2);
+    return [mappedPoints,restoreMap];
+};
+
+
+RPTree.prototype.GrahamScan = function( points ) {
+
+    //Using Graham scan (https://en.wikipedia.org/wiki/Graham_scan)
+    
+    console.log("Graham scan..");
+     var res = this.LinearTransformation(points);
+     var mappedPoints = res[0];
+     var restoreMap = res[1];
+     var n = mappedPoints.length
+
+    function compareFunction(a,b) {
+        var diff = a.y - b.y;
+        if (diff===0){
+            return a.z - b.z;
+        } else{
+            return diff;
+        }
+    }
+    mappedPoints.sort(compareFunction);
+    
+    var lowest = mappedPoints[0].clone();
+    
+    function polarCompare(a,b) {
+        
+        var an = a.clone().normalize();
+        var bn = b.clone().normalize()
+        var angleDeg1 = Math.atan2(a.z - lowest.z, a.y - lowest.x) * 180 / Math.PI;
+        var angleDeg2 = Math.atan2(b.z - lowest.z, b.y - lowest.x) * 180 / Math.PI;
+        
+        return angleDeg1-angleDeg2
+    }
+    
+    mappedPoints.sort(polarCompare);
+    var n = mappedPoints.length
+
+    function ccw(p1,p2,p3){
+        return (p2.y - p1.y)*(p3.z - p1.z) - (p2.z - p1.z)*(p3.y-p1.y);
+    }
+    
+    var m = 1;
+    mappedPoints.unshift(mappedPoints.slice(-1)[0]);
+    for(var i = 2;i<=n;i++){
+        while(ccw(mappedPoints[m-1],mappedPoints[m],mappedPoints[i]) <= 0){
+            if (m>1){
+                m -= 1;
+                continue
+            } else if (i===n){
+                break
+            } else{
+                i += 1;
+            }      
+        }
+        m++;
+        var tmp = mappedPoints[m];
+        mappedPoints[m] = mappedPoints[i];
+        mappedPoints[i] = tmp;
+    }
+    
+    mappedPoints.pop()
+    var resLines = [];
+    for(var i = 0;i<n;i++){        
+        var source = restoreMap.get(mappedPoints[i]);
+        var t = mappedPoints[i];        
+        var j = (i+1)%mappedPoints.length
+        var destination = restoreMap.get(mappedPoints[j])
+        var line2 = new THREE.Line3(source,destination)
+        resLines.push(line2)
+    }
+    return resLines;
+};
+
 RPTree.prototype.visualizeLine = function(l) {
+    console.log("VISUALIZING LINE")
+    console.log(l)
     var geometry = new THREE.Geometry();
     geometry.vertices.push(l.start);
     geometry.vertices.push(l.end);
@@ -228,6 +375,7 @@ RPTree.prototype.visualizeLine = function(l) {
     });
     var line = new THREE.Line(geometry,material);
     scene.add(line);
+    console.log("added")
 }
 
 RPTree.prototype.partitionPoint = function (point) {
