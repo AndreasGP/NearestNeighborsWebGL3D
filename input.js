@@ -22,8 +22,8 @@ function onGenerateClicked() {
     
     points = generatePoints();
     
-    algorithm = document.getElementById("chosenalgorithm").value
-    log("Chosen algorithm is " + algorithm +".");
+    algorithmName = document.getElementById("chosenalgorithm").value
+    log("Chosen algorithm is " + algorithmName +".");
     
     var x = document.getElementById("searchX").value;
     var y = document.getElementById("searchY").value;
@@ -43,31 +43,33 @@ function onGenerateClicked() {
     drawSearchPoint();
     
     
-    //TODO: Manage algorithm switching properly
-    /*oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
-    oct.buildTree();
-	oct.draw();
-    algorithm = new OctTreeNearestNeighbor(oct, searchPoint);*/
-//    while (algorithm.doStep());
-//    algorithm.draw();
-    
-    kd = new KDTree(0, 0, 0, [max - min, max - min, max - min], 0, points);
-    kd.buildTree();
+    if(algorithmName == "octree") {
+        oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
+        oct.buildTree();
+        oct.draw();
+        
+        algorithm = new OctTreeNearestNeighbor(oct, searchPoint);
+        algorithm.draw();
+    } else if(algorithmName == "kdtree") {
+        kd = new KDTree(0, 0, 0, [max - min, max - min, max - min], 0, points);
+        kd.buildTree();
 	kd.draw();
-    algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
-	
-    //TODO: Make it work with this
-    //doNextStep(algorithm)
-    //instead of this
-    //while(algorithm.doStep());
+        
+        algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
+        algorithm.draw();
+    } else if(algorithmName == "rptree") {
+        rp = new RPTree(points,RPTree.initBounds(min,max))
+        algorithm = rp
+    }
 }
 
 
 
 var doNextStep = function(){
-	clearEverything();
-	addDataPointsToRendering();
+    clearEverything();
+    addDataPointsToRendering(); 
     drawSearchPoint();
+    
     var cont = algorithm.doStep()
 	algorithm.draw();
     if(cont) {
