@@ -70,16 +70,16 @@ var doNextStep = function(){
     addDataPointsToRendering(); 
     drawSearchPoint();
     
-    var cont = algorithm.doStep()
-	algorithm.draw();
+    var cont = algorithm.doStep();
+    
+    algorithm.draw();
     if(cont) {
         setTimeout(doNextStep, 1000)
     }
 }
 
 function onDoNextStepClicked() {
-    log("Do next step pressed");
-	doNextStep();
+    doNextStep();
 }
 
 function onConsoleClearClicked() {

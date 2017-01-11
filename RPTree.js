@@ -8,6 +8,8 @@ var RPTree = function(objects, bounds) {
     this.objects = objects;
     this.bounds = bounds;
     this.state = State.START;
+    
+    this.colors = [0x4286f4, 0xff0000, 0x00ff00];
 };
 
 var State = {
@@ -37,7 +39,11 @@ RPTree.prototype.drawTemp = function(vertices) {
     drawPolygonV3(vertices,0xffFFFF, 0x00FF00, true, 0.2);
 };
 
-RPTree.prototype.draw = function() {
+RPTree.prototype.draw = function(depth) {
+    if(isNaN(depth)) {
+        console.log("depth 0");
+        depth = 0;
+    }
     switch(this.state){
         case State.WAITING_LINE:
             console.log("visualizing bounds");
@@ -51,12 +57,12 @@ RPTree.prototype.draw = function() {
             console.log("Showing plane between two points");
             this.drawConnectingLine();
             this.drawMidPoint();
-            this.drawPlane(this.splittingPlane,0x4286f4);
+            this.drawPlane(this.splittingPlane,this.colors[depth % this.colors.length]);
             break;
         case State.DONE:
-            this.drawPlane(this.splittingPlane,0x4286f4);
+            this.drawPlane(this.splittingPlane, this.colors[depth % this.colors.length]);
             for (var i = 0; i < this.children.length; i++) {
-                this.children[i].draw();
+                this.children[i].draw(depth + 1);
             }
             break;
     }
