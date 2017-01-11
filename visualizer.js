@@ -185,7 +185,7 @@ function drawCube(pos, size, color) {
 }
 
 function drawSphere(pos, radius, color, transparent, opacity) {
-    var geometry = new THREE.SphereGeometry(radius, 20, 8);
+    var geometry = new THREE.SphereGeometry(radius, 32, 16);
     var material = new THREE.MeshBasicMaterial({
         color: color, 
         transparent: transparent, 
@@ -211,7 +211,7 @@ function updateSearchRadius(radius) {
     if(typeof radiusSphere !== 'undefined') {
         scene.remove(radiusSphere);
     }
-    radiusSphere = drawSphere(searchPoint, radius, 0xff0000, true, 0.2);
+    radiusSphere = drawSphere(searchPoint, radius, 0xff00ff, true, 0.3);
 }
 
 //Only supports convex shapes, 3 vertices minimum.

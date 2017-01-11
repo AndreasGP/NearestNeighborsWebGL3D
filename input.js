@@ -54,7 +54,7 @@ function onGenerateClicked() {
     kd = new KDTree(0, 0, 0, [max - min, max - min, max - min], 0, points);
     kd.buildTree();
 	kd.draw();
-    //algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
+    algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
 	
     //TODO: Make it work with this
     //doNextStep(algorithm)

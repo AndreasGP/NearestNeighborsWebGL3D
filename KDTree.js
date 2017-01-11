@@ -1,13 +1,13 @@
 //Main KDTree Object. 
-var KDTree = function(x, y, z, size, lvl, objects, parent = null){
+var KDTree = function(x, y, z, size, lvl, points, parent = null){
 	this.x = x;
 	this.y = y;
 	this.z = z;
 	this.size = size;
 	this.lvl = lvl;
 	this.children = [];
-	this.objects = objects;
-	this.MAX_OBJECTS = 0;
+	this.points = points;
+	this.MAX_POINTS = 1;
 	this.parent = parent;
 	this.splitpoint = null;
 }
@@ -27,7 +27,7 @@ KDTree.prototype.contains = function(point){
 KDTree.prototype.addPoint = function(point){
 	for(var i = 0; i < this.children.length; i++){
 		if(this.children[i].contains(point)){
-			this.children[i].objects.push(point);
+			this.children[i].points.push(point);
 			break;
 		}
 	}
@@ -75,12 +75,12 @@ KDTree.prototype.draw = function(){
 
 //A single step of kdtree building
 KDTree.prototype.buildTree = function(){
-	if(this.objects.length > this.MAX_OBJECTS){
-		var temp = JSON.parse(JSON.stringify(this.objects));
+	if(this.points.length > this.MAX_POINTS){
+		var temp = JSON.parse(JSON.stringify(this.points));
 		temp = temp.sort(function(a,b){return compare(a,b,0)});
 		this.splitpoint = temp[Math.floor(temp.length/2)];
 		
-		this.objects = [];
+		this.points = [];
 		
 		var newwidth;
 		
@@ -110,4 +110,168 @@ KDTree.prototype.buildTree = function(){
 
 var distance = function(p1,p2){
 	return Math.sqrt(Math.pow(p1.x-p2.x, 2) + Math.pow(p1.y-p2.y, 2) +Math.pow(p1.z-p2.z, 2));
+}
+
+//Object for radius NN search on kd-tree
+var KDTreeNearestNeighbor = function (kdtree, point) {
+    this.kdtree = kdtree;
+    this.point = point;
+    this.residingArea = null;
+    this.searchArea = null;
+    this.nearestDistance = null;
+    this.nearestPoint = null;
+    this.visitedAreas = [];
+}
+
+//Distance from our point to plane
+function distanceTo(node, point) {
+	var dmin = 0;
+	if(point[0] < node.x){
+		dmin += Math.pow(point[0] - node.x, 2);
+	} else if (point[0] > node.x+node.size[0]) {
+        dmin += Math.pow(point[0] - node.x+node.size[0], 2);
+    }
+	
+	if(point[1] < node.y){
+		dmin += Math.pow(point[1] - node.y, 2);
+	} else if (point[1] > node.y+node.size[1]) {
+        dmin += Math.pow(point[1] - node.y+node.size[1], 2);
+    }
+	
+	if(point[2] < node.z){
+		dmin += Math.pow(point[2] - node.z, 2);
+	} else if (point[2] > node.z+node.size[2]) {
+        dmin += Math.pow(point[2] - node.z+node.size[2], 2);
+    }
+	
+    return dmin;
+}
+
+//Check the current area for closest node inside that area, if any exist.
+//Improve area checking
+KDTreeNearestNeighbor.prototype.checkArea = function (node) {
+    if (this.nearestDistance == null) {
+        this.nearestDistance = Infinity;
+    }
+
+    var change = false;
+    
+    //check splitting node
+    if (node.splitpoint != null && dist(node.splitpoint, this.point) < this.nearestDistance) {
+        this.nearestDistance = dist(node.splitpoint, this.point);
+        this.nearestPoint = node.splitpoint;
+        change = true;
+    }
+    
+    var points = node.points;
+    if (points.length == 0 && node.children.length != 0) {
+        for (var i = 0; i < node.children.length; i++) {
+			console.log(distanceTo(node.children[i], this.point))
+			console.log(this.nearestDistance)
+            if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedAreas.indexOf(node.children[i]) == -1) {
+                change = this.checkArea(node.children[i]);
+				return change;
+            }
+        }
+    } else if (points.length != 0) {
+        for (var i = 0; i < points.length; i++) {
+            if (dist(points[i], this.point) < this.nearestDistance) {
+                this.nearestDistance = dist(points[i], this.point);
+                this.nearestPoint = points[i];
+                change = true;
+            }
+        }
+		this.visitedAreas.push(node);
+		this.searchArea = node;
+		return change;
+    }
+	this.visitedAreas.push(node);
+	this.searchArea = node;
+    return change;
+}
+
+KDTreeNearestNeighbor.prototype.draw = function () {
+	
+	//Draw the kdtree
+	this.kdtree.draw();
+    //Draw visited areas with different color
+    /*for (var i = 0; i < this.visitedAreas.length; i++) {
+        var area = this.visitedAreas[i];
+        drawCube([area.x, area.y, area.z], area.size, 0x00ff00);
+    }*/
+    //Draw current residential area with different color
+    var size = this.residingArea.size
+    drawCube([this.residingArea.x, this.residingArea.y, this.residingArea.z], size, 0xff00ff);
+	
+	var size = this.searchArea.size
+    drawCube([this.searchArea.x, this.searchArea.y, this.searchArea.z], size, 0x00ffff);
+	
+	var pointCoord = pointSpaceTo3DRenderSpace(this.point);
+	if(this.nearestPoint == null) return;
+	var nearestCoord = pointSpaceTo3DRenderSpace(this.nearestPoint);
+    //Draw a sphere showing current search radius
+    //drawSphere(pointCoord, dist(pointCoord,nearestCoord), 0xff0000, true, 0.2);
+    updateSearchRadius(dist(pointCoord, nearestCoord));
+	
+    //Draw current nearest point with different color
+    var geometry = new THREE.SphereGeometry(0.3, 8, 6);
+    var material = new THREE.MeshLambertMaterial({color: new THREE.Color(0xffff00)});
+    var obj = new THREE.Mesh(geometry, material);
+    obj.position.x = nearestCoord[0];
+    obj.position.y = nearestCoord[1];
+    obj.position.z = nearestCoord[2];
+    scene.add(obj);
+}
+
+//Single step of NN
+//Step 1: Find the area where our node is
+//Step 2: Find the nearest node in that area to our node
+//Step 3 - ...: Check if any other area within radius contains a node closer to us.
+//If closest has been found nothing is done here anymore
+KDTreeNearestNeighbor.prototype.doStep = function () {
+    if (!this.residingArea) {
+        this.residingArea = this.kdtree;
+        while (this.residingArea.children.length != 0) {
+            for (var i = 0; i < this.residingArea.children.length; i++) {
+                if (this.residingArea.children[i].contains(this.point)) {
+                    this.residingArea = this.residingArea.children[i];
+                    break;
+                }
+            }
+        }
+		log("Found area where point " + "POINT" + " resides.");
+        this.searchArea = this.residingArea;
+        return true;
+    }
+	
+    if (!this.nearestDistance) {
+        this.checkArea(this.residingArea);
+		if(this.nearestDistance != Infinity){
+			log("Current nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+		}else{
+			log("No points in residing area.");
+		}
+        return true;
+    }
+	
+	if(this.searchArea.parent != null){
+		var parent = this.searchArea.parent;
+		for(var i = 0; i < parent.children.length; i++){
+			var node = parent.children[i];
+			if (this.visitedAreas.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {
+                if (this.checkArea(node)) {
+					log("New nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+                }else{
+					log("No points in current area.");
+				}
+				return true;
+            }
+		}
+		this.searchArea = parent;
+		return true;
+	}
+
+    //Tagasta midagi, et teaks et on lähim leitud.
+	log("Final nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+    return false
 }

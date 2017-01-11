@@ -120,7 +120,7 @@ function distanceTo(node, point) {
     return dmin;
 }
 
-//Check the current octant for closest node inside that octant, if any excist.
+//Check the current octant for closest node inside that octant, if any exist.
 //Improve octand checking
 OctTreeNearestNeighbor.prototype.checkOctant = function (node) {
     if (this.nearestDistance == null) {
