@@ -7,9 +7,9 @@ function generatePoints() {
     var numberOfPoints = document.getElementById("randomElementsCount").value
     
     for(var i = 0; i < numberOfPoints; i++) {
-	var x = round2(Math.random() * (max - min) + min);
-	var y = round2(Math.random() * (max - min) + min);
-	var z = round2(Math.random() * (max - min) + min);
+	var x = Math.random() * (max - min) + min;
+	var y = Math.random() * (max - min) + min;
+	var z = Math.random() * (max - min) + min;
 	points.push([x, y, z]);
     }
     

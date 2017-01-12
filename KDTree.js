@@ -166,8 +166,6 @@ KDTreeNearestNeighbor.prototype.checkArea = function (node) {
     var points = node.points;
     if (points.length == 0 && node.children.length != 0) {
         for (var i = 0; i < node.children.length; i++) {
-			console.log(distanceTo(node.children[i], this.point))
-			console.log(this.nearestDistance)
             if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedAreas.indexOf(node.children[i]) == -1) {
                 change = this.checkArea(node.children[i]);
 				return change;
@@ -197,14 +195,14 @@ KDTreeNearestNeighbor.prototype.draw = function () {
     //Draw visited areas with different color
     for (var i = 0; i < this.visitedAreas.length; i++) {
         var area = this.visitedAreas[i];
-        drawCube([area.x, area.y, area.z], area.size, 0x00ff00);
+        drawCube([area.x, area.y, area.z], area.size, 0x00cc11, -0.1); //green
     }
     //Draw current residential area with different color
     var size = this.residingArea.size
-    drawCube([this.residingArea.x, this.residingArea.y, this.residingArea.z], size, 0xff00ff);
+    drawCube([this.residingArea.x, this.residingArea.y, this.residingArea.z], size, 0x9400ff, -0.2); //pink
 	
 	var size = this.searchArea.size
-    drawCube([this.searchArea.x, this.searchArea.y, this.searchArea.z], size, 0x00ffff);
+    drawCube([this.searchArea.x, this.searchArea.y, this.searchArea.z], size, 0x00ffff, -0.3); //light blue
 	
 	var pointCoord = pointSpaceTo3DRenderSpace(this.point);
 	if(this.nearestPoint == null) return;
@@ -239,7 +237,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
                 }
             }
         }
-		log("Found area where point (" + this.point + ") resides.");
+		log("Found area where point " + arrayPointToString(this.point) + " resides.");
         this.searchArea = this.residingArea;
         return true;
     }
@@ -247,7 +245,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
     if (!this.nearestDistance) {
         this.checkArea(this.residingArea);
 		if(this.nearestDistance != Infinity){
-			log("Current nearest point is (" + this.nearestPoint + ") at a distance of " + round2(this.nearestDistance) + ".");
+			log("Current nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
 		}else{
 			log("No points in residing area.");
 		}
@@ -260,7 +258,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 			var node = parent.children[i];
 			if (this.visitedAreas.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {
                 if (this.checkArea(node)) {
-					log("New nearest point is (" + this.nearestPoint + ") at a distance of " + round2(this.nearestDistance) + ".");
+					log("New nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
                 }else{
 					log("No closer points in current area.");
 				}
@@ -272,6 +270,6 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 	}
 
     //Tagasta midagi, et teaks et on lähim leitud.
-	log("Final nearest point is (" + this.nearestPoint + ") at a distance of " + round2(this.nearestDistance) + ".");
+	log("Final nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
     return false
 }

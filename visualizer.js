@@ -165,10 +165,10 @@ function drawSearchPoint() {
         return [sphere, outlineSphere];
 }
 
-function drawCube(pos, size, color) {
-    var renderPos = pointSpaceTo3DRenderSpace(pos);
+function drawCube(pos, size, color, modifier = 0) {
+    var renderPos = pointSpaceTo3DRenderSpace([pos[0] - modifier/2, pos[1] - modifier/2, pos[2] - modifier/2]);
 
-    var renderSize = pointSpaceSizeTo3DRenderSpaceSize(size);
+    var renderSize = pointSpaceSizeTo3DRenderSpaceSize([size[0] + modifier, size[1] + modifier, size[2] + modifier]);
 
     var material = new THREE.LineBasicMaterial({
         color: color
