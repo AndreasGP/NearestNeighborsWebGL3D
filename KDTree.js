@@ -121,6 +121,7 @@ var KDTreeNearestNeighbor = function (kdtree, point) {
     this.nearestDistance = null;
     this.nearestPoint = null;
     this.visitedAreas = [];
+    this.visitedPoints = [];
 }
 
 //Distance from our point to plane
@@ -156,15 +157,18 @@ KDTreeNearestNeighbor.prototype.checkArea = function (node) {
 
     var change = false;
     
-    //check splitting node
-    if (node.splitpoint != null && dist(node.splitpoint, this.point) < this.nearestDistance) {
-        this.nearestDistance = dist(node.splitpoint, this.point);
-        this.nearestPoint = node.splitpoint;
-        change = true;
-    }
-    
     var points = node.points;
     if (points.length == 0 && node.children.length != 0) {
+    	if(this.visitedPoints.indexOf(node.splitpoint) == -1) {
+    		if(dist(node.splitpoint, this.point) < this.nearestDistance) {
+		        this.nearestDistance = dist(node.splitpoint, this.point);
+		        this.nearestPoint = node.splitpoint;
+		        change = true;
+    		}
+    		this.visitedPoints.push(node.splitpoint);
+    		this.searchArea = node;
+    		return change;
+    	}
         for (var i = 0; i < node.children.length; i++) {
             if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedAreas.indexOf(node.children[i]) == -1) {
                 change = this.checkArea(node.children[i]);
@@ -188,6 +192,17 @@ KDTreeNearestNeighbor.prototype.checkArea = function (node) {
     return change;
 }
 
+KDTreeNearestNeighbor.prototype.checkSplitpoint = function (splitpoint) {
+	var change = false;
+	if(dist(splitpoint, this.point) < this.nearestDistance) {
+	    this.nearestDistance = dist(splitpoint, this.point);
+	    this.nearestPoint = splitpoint;
+	    change = true;
+	}
+	this.visitedPoints.push(splitpoint);
+	return change;
+}
+
 KDTreeNearestNeighbor.prototype.draw = function () {
 	
 	//Draw the kdtree
@@ -199,10 +214,10 @@ KDTreeNearestNeighbor.prototype.draw = function () {
     }
     //Draw current residential area with different color
     var size = this.residingArea.size
-    drawCube([this.residingArea.x, this.residingArea.y, this.residingArea.z], size, 0x9400ff, -0.2); //pink
+    drawCube([this.residingArea.x, this.residingArea.y, this.residingArea.z], size, 0x9400ff, -0.05); //pink
 	
 	var size = this.searchArea.size
-    drawCube([this.searchArea.x, this.searchArea.y, this.searchArea.z], size, 0x00ffff, -0.3); //light blue
+    drawCube([this.searchArea.x, this.searchArea.y, this.searchArea.z], size, 0x00ffff, -0.15); //light blue
 	
 	var pointCoord = pointSpaceTo3DRenderSpace(this.point);
 	if(this.nearestPoint == null) return;
@@ -238,7 +253,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
             }
         }
 		log("Found area where point " + arrayPointToString(this.point) + " resides.");
-        this.searchArea = this.residingArea;
+        //this.searchArea = this.residingArea;
         return true;
     }
 	
@@ -254,6 +269,9 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 	
 	if(this.searchArea.parent != null){
 		var parent = this.searchArea.parent;
+		if(this.visitedPoints.indexOf(parent.splitpoint) == -1){
+			return this.checkSplitpoint(parent.splitpoint);
+		}
 		for(var i = 0; i < parent.children.length; i++){
 			var node = parent.children[i];
 			if (this.visitedAreas.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {

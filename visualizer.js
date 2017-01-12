@@ -211,7 +211,7 @@ function updateSearchRadius(radius) {
     if(typeof radiusSphere !== 'undefined') {
         scene.remove(radiusSphere);
     }
-    radiusSphere = drawSphere(searchPoint, radius, 0xff00ff, true, 0.3);
+    radiusSphere = drawSphere(searchPoint, radius, 0xff00ff, true, 0.2);
 }
 
 //Only supports convex shapes, 3 vertices minimum.
