@@ -88,4 +88,5 @@ function onConsoleClearClicked() {
 
 function log(text) {
     document.getElementById("algortihmconsole").value += text + "\n";
+    document.getElementById("algortihmconsole").scrollTop = document.getElementById("algortihmconsole").scrollHeight;
 }

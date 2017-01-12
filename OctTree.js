@@ -131,8 +131,6 @@ OctTreeNearestNeighbor.prototype.checkOctant = function (node) {
     var change = false;
     if (points.length == 0 && node.children.length != 0) {
         for (var i = 0; i < node.children.length; i++) {
-			console.log(distanceTo(node.children[i], this.point))
-			console.log(this.nearestDistance)
             if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedOctants.indexOf(node.children[i]) == -1) {
                 change = this.checkOctant(node.children[i]);
 				return change;
@@ -165,6 +163,9 @@ OctTreeNearestNeighbor.prototype.draw = function () {
         drawCube([oct.x, oct.y, oct.z], oct.size, 0x00ff00);
     }
     //Draw curent residential octant with different color
+    if(this.residingOctant == null){
+    	return
+    }
     var size = this.residingOctant.size
     drawCube([this.residingOctant.x, this.residingOctant.y, this.residingOctant.z], size, 0xff00ff);
 	
@@ -204,7 +205,7 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
                 }
             }
         }
-		log("Found octant where point " + "POINT" + " resides.");
+		log("Found octant where point " + arrayPointToString(this.point) + " resides.");
         this.searchOctant = this.residingOctant;
         return true;
     }
@@ -212,7 +213,7 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
     if (!this.nearestDistance) {
         this.checkOctant(this.residingOctant);
 		if(this.nearestDistance != Infinity){
-			log("Current nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+			log("Current nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " +  this.nearestDistance.toFixed(2));
 		}else{
 			log("No points in residing octant.");
 		}
@@ -225,7 +226,7 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
 			var node = parent.children[i];
 			if (this.visitedOctants.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {
                 if (this.checkOctant(node)) {
-					log("New nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+					log("New nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " +  this.nearestDistance.toFixed(2));
                 }else{
 					log("No points in current octant.");
 				}
@@ -237,6 +238,6 @@ OctTreeNearestNeighbor.prototype.doStep = function () {
 	}
 
     //Tagasta midagi, et teaks et on lähim leitud.
-	log("Final nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+	log("Final nearest point is " + arrayPointToString(this.nearestPoint)  + " at a distance of " +  this.nearestDistance.toFixed(2));
     return false
 }

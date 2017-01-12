@@ -118,39 +118,62 @@ var KDTreeNearestNeighbor = function (kdtree, point) {
     this.point = point;
     this.residingArea = null;
     this.searchArea = null;
-    this.nearestDistance = null;
+    this.nearestDistance = Infinity;
     this.nearestPoint = null;
     this.visitedAreas = [];
     this.visitedPoints = [];
+    this.nearestFound = false;
+    this.goingDown = false;
+    this.parentsToCheck = [];
 }
 
+function difference(p, l,u){
+	if(p < l)return l-p;
+	if(p > u)return p-u;
+	return 0;
+}
 //Distance from our point to plane
 function distanceTo(node, point) {
-	var dmin = 0;
-	if(point[0] < node.x){
-		dmin += Math.pow(point[0] - node.x, 2);
-	} else if (point[0] > node.x+node.size[0]) {
-        dmin += Math.pow(point[0] - node.x+node.size[0], 2);
-    }
-	
-	if(point[1] < node.y){
-		dmin += Math.pow(point[1] - node.y, 2);
-	} else if (point[1] > node.y+node.size[1]) {
-        dmin += Math.pow(point[1] - node.y+node.size[1], 2);
-    }
-	
-	if(point[2] < node.z){
-		dmin += Math.pow(point[2] - node.z, 2);
-	} else if (point[2] > node.z+node.size[2]) {
-        dmin += Math.pow(point[2] - node.z+node.size[2], 2);
-    }
-	
-    return dmin;
+	var dx = difference(point[0], node.x, node.x+node.size[0]),
+	dy =  difference(point[1], node.y, node.y+node.size[1]),
+	dz = difference(point[2], node.z, node.z+node.size[2]);
+	return dx*dx + dy*dy + dz*dz;
 }
 
 //Check the current area for closest node inside that area, if any exist.
 //Improve area checking
 KDTreeNearestNeighbor.prototype.checkArea = function (node) {
+	var change = false;
+    var points = node.points;
+    if (points.length == 0 && node.children.length != 0) {
+        for (var i = 0; i < node.children.length; i++) {
+            if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedAreas.indexOf(node.children[i]) == -1) {
+                change = this.checkArea(node.children[i]);
+				return change;
+            }
+        }
+        if (distanceTo(node.children[0], this.point) <= Math.pow(this.nearestDistance,2) && distanceTo(node.children[1], this.point) <= Math.pow(this.nearestDistance,2)){
+        	this.visitedAreas.push(node);
+        	return this.checkSplitpoint(node.splitpoint);
+        }
+        this.visitedAreas.push(node);
+        return change;
+    } else if (points.length != 0) {
+        for (var i = 0; i < points.length; i++) {
+            if (dist(points[i], this.point) < this.nearestDistance) {
+                this.nearestDistance = dist(points[i], this.point);
+                this.nearestPoint = points[i];
+                change = true;
+            }
+        }
+		this.visitedAreas.push(node);
+		this.searchArea = node;
+		return change;
+    }
+    this.visitedAreas.push(node);
+    this.searchArea = node;
+    return change;
+	/*
     if (this.nearestDistance == null) {
         this.nearestDistance = Infinity;
     }
@@ -159,16 +182,6 @@ KDTreeNearestNeighbor.prototype.checkArea = function (node) {
     
     var points = node.points;
     if (points.length == 0 && node.children.length != 0) {
-    	if(this.visitedPoints.indexOf(node.splitpoint) == -1) {
-    		if(dist(node.splitpoint, this.point) < this.nearestDistance) {
-		        this.nearestDistance = dist(node.splitpoint, this.point);
-		        this.nearestPoint = node.splitpoint;
-		        change = true;
-    		}
-    		this.visitedPoints.push(node.splitpoint);
-    		this.searchArea = node;
-    		return change;
-    	}
         for (var i = 0; i < node.children.length; i++) {
             if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedAreas.indexOf(node.children[i]) == -1) {
                 change = this.checkArea(node.children[i]);
@@ -187,9 +200,21 @@ KDTreeNearestNeighbor.prototype.checkArea = function (node) {
 		this.searchArea = node;
 		return change;
     }
-	this.visitedAreas.push(node);
+    if(node.splitpoint && 	this.visitedPoints.indexOf(node.splitpoint) == -1) {
+    	console.log(node.splitpoint)
+    	console.log(this.point)
+		if(dist(node.splitpoint, this.point) < this.nearestDistance) {
+	        this.nearestDistance = dist(node.splitpoint, this.point);
+	        this.nearestPoint = node.splitpoint;
+	        change = true;
+		}
+		this.visitedPoints.push(node.splitpoint);
+		this.searchArea = node;
+		return change;
+	}
 	this.searchArea = node;
-    return change;
+    this.visitedAreas.push(node);
+    return change;*/
 }
 
 KDTreeNearestNeighbor.prototype.checkSplitpoint = function (splitpoint) {
@@ -197,7 +222,11 @@ KDTreeNearestNeighbor.prototype.checkSplitpoint = function (splitpoint) {
 	if(dist(splitpoint, this.point) < this.nearestDistance) {
 	    this.nearestDistance = dist(splitpoint, this.point);
 	    this.nearestPoint = splitpoint;
+		log("Splitpoint " + arrayPointToString(splitpoint) + " is closer.");
 	    change = true;
+	}
+	else {
+		log("Splitpoint was not closer.");
 	}
 	this.visitedPoints.push(splitpoint);
 	return change;
@@ -216,8 +245,10 @@ KDTreeNearestNeighbor.prototype.draw = function () {
     var size = this.residingArea.size
     drawCube([this.residingArea.x, this.residingArea.y, this.residingArea.z], size, 0x9400ff, -0.05); //pink
 	
-	var size = this.searchArea.size
-    drawCube([this.searchArea.x, this.searchArea.y, this.searchArea.z], size, 0x00ffff, -0.15); //light blue
+    if(this.searchArea != null){
+		var size = this.searchArea.size
+	    drawCube([this.searchArea.x, this.searchArea.y, this.searchArea.z], size, 0x00ffff, -0.15); //light blue
+    }
 	
 	var pointCoord = pointSpaceTo3DRenderSpace(this.point);
 	if(this.nearestPoint == null) return;
@@ -242,31 +273,154 @@ KDTreeNearestNeighbor.prototype.draw = function () {
 //Step 3 - ...: Check if any other area within radius contains a node closer to us.
 //If closest has been found nothing is done here anymore
 KDTreeNearestNeighbor.prototype.doStep = function () {
-    if (!this.residingArea) {
+	if (!this.residingArea) {
         this.residingArea = this.kdtree;
-        while (this.residingArea.children.length != 0) {
-            for (var i = 0; i < this.residingArea.children.length; i++) {
-                if (this.residingArea.children[i].contains(this.point)) {
-                    this.residingArea = this.residingArea.children[i];
-                    break;
-                }
+		this.checkSplitpoint(this.residingArea.splitpoint);
+        log("Searching for the area where point " + arrayPointToString(this.point) + " resides.");
+        log("Current nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
+		return true;
+	}
+	if (this.residingArea.children.length != 0) {
+        for (var i = 0; i < this.residingArea.children.length; i++) {
+            if (this.residingArea.children[i].contains(this.point)) {
+                this.residingArea = this.residingArea.children[i];
+                break;
             }
         }
-		log("Found area where point " + arrayPointToString(this.point) + " resides.");
-        //this.searchArea = this.residingArea;
+        if(this.residingArea.children.length == 0){
+        	log("Found area where point " + arrayPointToString(this.point) + " resides.");
+        } else {
+    		this.checkSplitpoint(this.residingArea.splitpoint);
+        } 
+        log("Current nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
         return true;
-    }
+	}
 	
-    if (!this.nearestDistance) {
-        this.checkArea(this.residingArea);
-		if(this.nearestDistance != Infinity){
-			log("Current nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
+    if (this.visitedAreas.indexOf(this.residingArea) == -1) {
+    	this.searchArea = this.residingArea;
+        if(this.checkArea(this.residingArea)){
+	        log("New nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
 		}else{
-			log("No points in residing area.");
+			log("No closer point in residing area.");
 		}
         return true;
     }
-	
+
+    if(!this.nearestFound){
+    	if(this.searchArea.parent != null && !this.goingDown){
+    		var parent = this.searchArea.parent;
+    		for(var i = 0; i < parent.children.length; i++){
+    			var node = parent.children[i];
+    			if (this.visitedAreas.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {
+                    if (this.checkArea(node)) {
+    					log("New nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
+                    }else{
+    					log("No closer points in current area.");
+    				}
+    				return true;
+                }
+    		}
+    		this.searchArea = parent;
+    		return true;
+    	} 
+		else {
+    		this.goingDown = true;
+    		if(this.searchArea.children.length != 0){
+	    		var child1 = this.searchArea.children[0];
+	    		var child2 = this.searchArea.children[1];
+	    		var unvisited = [];
+	    		if(this.visitedAreas.indexOf(child1) == -1) unvisited.push(child1);
+	    		if(this.visitedAreas.indexOf(child2) == -1) unvisited.push(child2);
+	    		console.log("HERE");
+	    		console.log(unvisited.length);
+	    		if(unvisited.length == 2){
+					console.log(distanceTo(child1, this.point), distanceTo(child2, this.point), Math.pow(this.nearestDistance,2));
+	    			if(distanceTo(child1, this.point) <= Math.pow(this.nearestDistance,2) && 
+	    					distanceTo(child2, this.point) <= Math.pow(this.nearestDistance,2)){
+	    				log("Both subareas need to be checked.");
+	    				if(this.visitedPoints.indexOf(this.searchArea.splitpoint) == -1){
+	    					return checkSplitpoint(this.splitpoint);
+	    				}
+	    				this.parentsToCheck.push(this.searchArea);
+	    				this.searchArea = child1;
+	    				return true;
+	    			} else if (distanceTo(child1, this.point) <= Math.pow(this.nearestDistance,2)){
+	    				this.searchArea = child1;
+	    				log("One of the subareas needs to be checked.");
+	    				return true;
+	    			} else if (distanceTo(child2, this.point) <= Math.pow(this.nearestDistance,2)){
+	    				this.searchArea = child2;
+	    				log("One of the subareas needs to be checked.");
+	    				return true;
+	    			} else {
+	    				log("No subareas need to be checked.");
+	    				this.visitedAreas.push(this.searchArea);
+	    				return true;
+	    			}
+	    		} else if(unvisited.length == 1){
+					console.log(unvisited[0], distanceTo(unvisited[0], this.point),Math.pow(this.nearestDistance,2));
+	    			if (distanceTo(unvisited[0], this.point) <= Math.pow(this.nearestDistance,2)){
+	    				this.searchArea = unvisited[0];
+	    				log("The other subarea needs to be checked.");
+	    				return true;
+	    			} else {
+	    				log("The other subarea doesn't need to be checked.");
+	    				this.visitedAreas.push(this.searchArea);
+	    				var index = this.parentsToCheck.indexOf(this.searchArea); 
+		    			if(index != -1){
+		    				this.parentsToCheck.splice(index, 1);
+		    			}
+		    			if(this.parentsToCheck.length != 0){
+		    				this.searchArea = this.searchArea.parent;
+			    			return true;
+		    			} else {
+		    				this.nearestFound = true;
+		    			}
+	    			}
+	    		} else {
+	    			log("All subareas visited.");
+	    			this.visitedAreas.push(this.searchArea);
+	    			var index = this.parentsToCheck.indexOf(this.searchArea); 
+	    			if(index != -1){
+	    				this.parentsToCheck.splice(index, 1);
+	    			}
+	    			if(this.parentsToCheck.length != 0){
+	    				this.searchArea = this.searchArea.parent;
+		    			return true;
+	    			} else {
+	    				this.nearestFound = true;
+	    			}
+	    		}
+    		} else {
+    			if(this.checkArea(this.searchArea)){
+    				log("New nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
+                }else{
+					log("No closer points in current area.");
+				}
+    			return true;
+    			if(this.parentsToCheck.length == 0){
+    				this.nearestFound = true;
+    			}
+    			//FIXME:works til here
+    		}
+	    	/*
+    		for(var i = 0; i < this.searchArea.children.length; i++){
+    			var node = this.searchArea.children[i];
+    			if (this.visitedAreas.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {
+                    if (this.checkArea(node)) {
+    					log("New nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
+                    }else{
+    					log("No closer points in current area.");
+    				}
+    				return true;
+                }
+    		}*/
+    		
+    	}
+    }
+    //TODO:remove
+    log("THE END");
+    /*
 	if(this.searchArea.parent != null){
 		var parent = this.searchArea.parent;
 		if(this.visitedPoints.indexOf(parent.splitpoint) == -1){
@@ -286,8 +440,10 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 		this.searchArea = parent;
 		return true;
 	}
-
-    //Tagasta midagi, et teaks et on lähim leitud.
-	log("Final nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
+*/
+    if(this.nearestFound){
+	    //Tagasta midagi, et teaks et on lähim leitud.
+		log("Final nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
+    }
     return false
 }
