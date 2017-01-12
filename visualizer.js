@@ -166,7 +166,7 @@ function drawSearchPoint() {
 }
 
 function drawCube(pos, size, color, modifier) {
-    if(isNan(modifier)) {
+    if(isNaN(modifier)) {
         modifier = 0;
     }
     var renderPos = pointSpaceTo3DRenderSpace([pos[0] - modifier/2, pos[1] - modifier/2, pos[2] - modifier/2]);
