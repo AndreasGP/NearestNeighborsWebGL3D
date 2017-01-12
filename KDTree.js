@@ -195,10 +195,10 @@ KDTreeNearestNeighbor.prototype.draw = function () {
 	//Draw the kdtree
 	this.kdtree.draw();
     //Draw visited areas with different color
-    /*for (var i = 0; i < this.visitedAreas.length; i++) {
+    for (var i = 0; i < this.visitedAreas.length; i++) {
         var area = this.visitedAreas[i];
         drawCube([area.x, area.y, area.z], area.size, 0x00ff00);
-    }*/
+    }
     //Draw current residential area with different color
     var size = this.residingArea.size
     drawCube([this.residingArea.x, this.residingArea.y, this.residingArea.z], size, 0xff00ff);
@@ -239,7 +239,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
                 }
             }
         }
-		log("Found area where point " + "POINT" + " resides.");
+		log("Found area where point (" + this.point + ") resides.");
         this.searchArea = this.residingArea;
         return true;
     }
@@ -247,7 +247,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
     if (!this.nearestDistance) {
         this.checkArea(this.residingArea);
 		if(this.nearestDistance != Infinity){
-			log("Current nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+			log("Current nearest point is (" + this.nearestPoint + ") at a distance of " + round2(this.nearestDistance) + ".");
 		}else{
 			log("No points in residing area.");
 		}
@@ -260,9 +260,9 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 			var node = parent.children[i];
 			if (this.visitedAreas.indexOf(node) == -1 && distanceTo(node, this.point) <= Math.pow(this.nearestDistance,2)) {
                 if (this.checkArea(node)) {
-					log("New nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+					log("New nearest point is (" + this.nearestPoint + ") at a distance of " + round2(this.nearestDistance) + ".");
                 }else{
-					log("No points in current area.");
+					log("No closer points in current area.");
 				}
 				return true;
             }
@@ -272,6 +272,6 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 	}
 
     //Tagasta midagi, et teaks et on lähim leitud.
-	log("Final nearest point is " + "POINT" + " at a distance of " + "DISTANCE");
+	log("Final nearest point is (" + this.nearestPoint + ") at a distance of " + round2(this.nearestDistance) + ".");
     return false
 }

@@ -7,9 +7,9 @@ function generatePoints() {
     var numberOfPoints = document.getElementById("randomElementsCount").value
     
     for(var i = 0; i < numberOfPoints; i++) {
-	var x = Math.random() * (max - min) + min;
-	var y = Math.random() * (max - min) + min;
-	var z = Math.random() * (max - min) + min;
+	var x = round2(Math.random() * (max - min) + min);
+	var y = round2(Math.random() * (max - min) + min);
+	var z = round2(Math.random() * (max - min) + min);
 	points.push([x, y, z]);
     }
     
@@ -53,10 +53,10 @@ function onGenerateClicked() {
     } else if(algorithmName == "kdtree") {
         kd = new KDTree(0, 0, 0, [max - min, max - min, max - min], 0, points);
         kd.buildTree();
-	kd.draw();
+        kd.draw();
         
         algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
-        algorithm.draw();
+        //algorithm.draw();
     } else if(algorithmName == "rptree") {
         rp = new RPTree(points,RPTree.initBounds(min,max))
         algorithm = rp
@@ -73,9 +73,9 @@ var doNextStep = function(){
     var cont = algorithm.doStep();
     
     algorithm.draw();
-    if(cont) {
+    /*if(cont) {
         setTimeout(doNextStep, 1000)
-    }
+    }*/
 }
 
 function onDoNextStepClicked() {

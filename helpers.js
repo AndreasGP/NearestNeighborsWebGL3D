@@ -5,6 +5,10 @@ function lerpPoint(value, min, max) {
 	return 1 - (max - value)/(max - min);
 }
 
+function round2(value){
+	return Math.round(value * 100) / 100;
+}
+
 function pointSpaceTo2DRenderSpace(point) {
     x = lerpPoint(point[0], min, max) * width;
     y = lerpPoint(point[1], min, max) * width;
