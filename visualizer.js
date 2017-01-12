@@ -212,6 +212,10 @@ function updateSearchRadius(radius) {
         scene.remove(radiusSphere);
     }
     radiusSphere = drawSphere(searchPoint, radius, 0xff00ff, true, 0.2);
+    //Force it on top
+    radiusSphere.material.depthWrite = false;
+    radiusSphere.material.depthTest = false;
+    radiusSphere.material.renderDepth = 1e20;
 }
 
 //Only supports convex shapes, 3 vertices minimum.
