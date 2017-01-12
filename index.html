@@ -28,7 +28,7 @@
                 <div class="tab-content">
                     <div id="tab_algorithms" class="tab-pane fade in active">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <h3>1. Choose the number of data points to use:</h3>
                                 <div class="form-group col-md-offset-1 col-md-8">
                                     <select class="form-control" id="randomElementsCount">
@@ -36,8 +36,7 @@
                                         <option>25</option>
                                         <option>50</option>
                                         <option>100</option>
-                                        <option>500</option>
-                                        <option>1000</option>
+                                        <option>200</option>
                                     </select>
                                 </div>
                                 <div class="clearfix"></div>
@@ -45,14 +44,14 @@
                                 <div class="row">
                                     <div class="col-md-offset-1 col-md-8">
                                         <select class="form-control" id="chosenalgorithm">
+                                            <option value="rptree">Random Projections tree</option>
                                             <option value="octree">Octree</option>
                                             <option value="kdtree">KD-tree</option>
-                                            <option value="rptree">Random Projections tree</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <h3>2. Insert a point for which to find NN for or leave empty for a random point to be generated:</h3> 
                                 <div class="row">
                                     <div class="col-xs-4">
@@ -66,7 +65,37 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 xs-offset-1">
+                                <h3>4. Algorithm parameters:</h3>
+                                <div class="col-xs-12">
+                                    Max number of points in a space partition:
+                                    <div class="form-group col-md-offset-1 col-md-8">
+                                        <select class="form-control" id="maxElements">
+                                            <option>1</option>
+                                            <option>2</option>
+                                            <option>3</option>
+                                            <option>5</option>
+                                            <option>8</option>
+                                            <option>13</option>
+                                            <option>20</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="checkbox col-xs-12">
+                                    <label>
+                                        <input type="checkbox" id="autoUpdate" onclick="onDoStepsAutomaticallyChanged()">Do steps automatically
+                                    </label>
+                                </div>
+                                <div class="col-xs-12">
+                                    Automatic step interval: 
+                                    <output for="updateInterval" id="updaterIntervalValue">500 ms</output>
+                                    <input type="range" min="50" max="4000" value="500" id="updateInterval" 
+                                           step="50" oninput="updateUpdateInterval(value)">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <h3>Algorithm output:</h3>
                                 <textarea class="form-control" rows="7" id="algortihmconsole"></textarea>
                                 <button type="button" class="btn btn-xs btn-danger pull-right" onclick="onConsoleClearClicked()">Clear</button>
@@ -75,10 +104,10 @@
                         <div class="row">
                             <br>
                             <div class="col-md-offset-2 col-md-4">
-                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onGenerateClicked()" >4. Generate</button>
+                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onGenerateClicked()" >5. Generate</button>
                             </div>
                             <div class="col-md-3">
-                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onDoNextStepClicked()" >5. Do next step</button>
+                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onDoNextStepClicked()" >6. Do next step</button>
                             </div>
                         </div>
                         <br>

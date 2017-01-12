@@ -18,6 +18,9 @@ function generatePoints() {
 }
 var algorithm;
 function onGenerateClicked() {
+    
+    onConsoleClearClicked();
+    
     clearEverything();
     
     points = generatePoints();
@@ -42,7 +45,9 @@ function onGenerateClicked() {
     addDataPointsToRendering();
     drawSearchPoint();
     
-    
+    //TODO: Make algorithms use this
+    maxPartitionElements = document.getElementById("maxElements").value
+   
     if(algorithmName == "octree") {
         oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
         oct.buildTree();
@@ -58,12 +63,29 @@ function onGenerateClicked() {
         algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
         //algorithm.draw();
     } else if(algorithmName == "rptree") {
-        rp = new RPTree(points,RPTree.initBounds(min,max))
+        RPTree.searchRadius = null;
+        RPTree.nn = null;
+        var sT = pointSpaceTo3DRenderSpace(searchPoint);
+        var searchVector = new THREE.Vector3(sT[0],sT[1],sT[2]);
+        var initialBounds = RPTree.initBounds(min,max);
+        rp = new RPTree(points,searchVector,initialBounds,maxPartitionElements,null)
         algorithm = rp
+    }
+    
+    if(doStepsAutomatically) {
+        doNextStep();
     }
 }
 
+doStepsAutomatically = false;
+stepInterval = 500;
 
+function onDoStepsAutomaticallyChanged() {
+    doStepsAutomatically = document.getElementById("autoUpdate").checked;
+    if(doStepsAutomatically) {
+        doNextStep();
+    }
+}
 
 var doNextStep = function(){
     clearEverything();
@@ -73,13 +95,18 @@ var doNextStep = function(){
     var cont = algorithm.doStep();
     
     algorithm.draw();
-    /*if(cont) {
-        setTimeout(doNextStep, 1000)
-    }*/
+    if(cont && doStepsAutomatically) {
+        setTimeout(doNextStep, stepInterval)
+    }
 }
 
 function onDoNextStepClicked() {
     doNextStep();
+}
+
+function updateUpdateInterval(value) {
+    document.getElementById("updaterIntervalValue").value = value + " ms";
+    stepInterval = value;
 }
 
 function onConsoleClearClicked() {
@@ -87,6 +114,7 @@ function onConsoleClearClicked() {
 }
 
 function log(text) {
-    document.getElementById("algortihmconsole").value += text + "\n";
-    document.getElementById("algortihmconsole").scrollTop = document.getElementById("algortihmconsole").scrollHeight;
+    var console = document.getElementById("algortihmconsole")
+    console.value += text + "\n";
+    console.scrollTop = console.scrollHeight;
 }

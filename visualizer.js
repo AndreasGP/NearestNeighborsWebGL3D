@@ -165,7 +165,10 @@ function drawSearchPoint() {
         return [sphere, outlineSphere];
 }
 
-function drawCube(pos, size, color, modifier = 0) {
+function drawCube(pos, size, color, modifier) {
+    if(isNaN(modifier)) {
+        modifier = 0;
+    }
     var renderPos = pointSpaceTo3DRenderSpace([pos[0] - modifier/2, pos[1] - modifier/2, pos[2] - modifier/2]);
 
     var renderSize = pointSpaceSizeTo3DRenderSpaceSize([size[0] + modifier, size[1] + modifier, size[2] + modifier]);
@@ -207,11 +210,36 @@ function drawSphere(pos, radius, color, transparent, opacity) {
     return sphere;
 }
 
+function drawSphereV3(pos, radius, color, transparent, opacity) {
+    var geometry = new THREE.SphereGeometry(radius, 32, 16);
+    var material = new THREE.MeshBasicMaterial({
+        color: color, 
+        transparent: transparent, 
+        opacity: opacity
+    });
+    
+    console.log(opacity);
+    
+    var sphere = new THREE.Mesh(geometry, material);
+        
+    sphere.position.set(pos.x, pos.y, pos.z);
+    console.log(sphere.position);
+    scene.add(sphere);
+    
+    radiusSphere = sphere;
+    
+    return sphere;
+}
+
 function updateSearchRadius(radius) {
     if(typeof radiusSphere !== 'undefined') {
         scene.remove(radiusSphere);
     }
     radiusSphere = drawSphere(searchPoint, radius, 0xff00ff, true, 0.2);
+    //Force it on top
+    radiusSphere.material.depthWrite = false;
+    radiusSphere.material.depthTest = false;
+    radiusSphere.material.renderDepth = 1e20;
 }
 
 //Only supports convex shapes, 3 vertices minimum.
