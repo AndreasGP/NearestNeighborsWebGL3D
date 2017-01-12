@@ -207,6 +207,27 @@ function drawSphere(pos, radius, color, transparent, opacity) {
     return sphere;
 }
 
+function drawSphereV3(pos, radius, color, transparent, opacity) {
+    var geometry = new THREE.SphereGeometry(radius, 32, 16);
+    var material = new THREE.MeshBasicMaterial({
+        color: color, 
+        transparent: transparent, 
+        opacity: opacity
+    });
+    
+    console.log(opacity);
+    
+    var sphere = new THREE.Mesh(geometry, material);
+        
+    sphere.position.set(pos.x, pos.y, pos.z);
+    console.log(sphere.position);
+    scene.add(sphere);
+    
+    radiusSphere = sphere;
+    
+    return sphere;
+}
+
 function updateSearchRadius(radius) {
     if(typeof radiusSphere !== 'undefined') {
         scene.remove(radiusSphere);

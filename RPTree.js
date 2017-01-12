@@ -1,14 +1,15 @@
-var RPTree = function(objects, bounds) {
+var RPTree = function(objects, searchPoint, bounds, max_per_partition, parent) {
     this.connectingLine = null;
     this.splittingPlane = null;
     this.splittingVector = null;
     this.bounds_visualized = false;
-    
+    this.partition_max = max_per_partition;
     this.children = [];
     this.objects = objects;
     this.bounds = bounds;
+    this.searchPoint = searchPoint;
     this.state = State.START;
-    
+    this.parent = parent;
     this.colors = [0x4286f4, 0xff0000, 0x00ff00];
 };
 
@@ -16,10 +17,16 @@ var State = {
     START: 0,
     WAITING_LINE: 1,
     LINE_MADE: 2, 
-    PLANE_MADE: 3
+    PLANE_MADE: 3,
+    DONE_BUILDING: 4,
+    SEARCH_INIT: 5,
+    SEARCH_WAITING_1: 6,
+    SEARCH_WAITING_2: 7,
+    SEARCH_FOUND: 8,
+    SEARCH_DONE: 9
 };
 
-RPTree.prototype.visualizeBounds = function() {
+RPTree.prototype.visualizeBounds = function( fillcolour ) {
     
     var vertices = [];
     for (var k in this.bounds){
@@ -31,7 +38,7 @@ RPTree.prototype.visualizeBounds = function() {
             vertices.push(l.end);
         }
     }
-    this.currentDraw = drawPolygonV3(vertices,0xFFFFFF, 0x4286f4, true, 0.2);
+    this.currentDraw = drawPolygonV3(vertices,fillcolour, 0x4286f4, true, 0.2);
     this.bounds_visualized = true;
 };
 
@@ -39,17 +46,24 @@ RPTree.prototype.drawTemp = function(vertices) {
     drawPolygonV3(vertices,0xffFFFF, 0x00FF00, true, 0.2);
 };
 
+RPTree.searchRadius = null;
+RPTree.nn = null;
+
 RPTree.prototype.draw = function(depth) {
+    if(this.parent === null){
+        this.drawNN();
+    }
     if(isNaN(depth)) {
-        console.log("depth 0");
         depth = 0;
     }
     switch(this.state){
         case State.WAITING_LINE:
+            //log("Partitioning highlighted area.");
             console.log("visualizing bounds");
-            this.visualizeBounds();
+            this.visualizeBounds(0xFFFFFF);
             break;
         case State.LINE_MADE:
+            //log("Creating the plane between these two points.");
             console.log("Showing line between two points");
             this.drawConnectingLine();
             break;
@@ -57,23 +71,75 @@ RPTree.prototype.draw = function(depth) {
             console.log("Showing plane between two points");
             this.drawConnectingLine();
             this.drawMidPoint();
-            this.drawPlane(this.splittingPlane,this.colors[depth % this.colors.length]);
+            this.drawSplittingPlane(depth);
             break;
-        case State.DONE:
-            this.drawPlane(this.splittingPlane, this.colors[depth % this.colors.length]);
-            for (var i = 0; i < this.children.length; i++) {
-                this.children[i].draw(depth + 1);
+        case State.DONE_BUILDING:
+            if(this.splittingPlane === null){
+                break;
             }
+            this.drawSplittingPlane(depth);
+            this.drawChildren(depth+1);
+            break;
+        case State.SEARCH_INIT:
+            log("Searching for NN in highlighted area.");
+            this.visualizeBounds(0xf4e842);
+            if(this.splittingPlane === null){
+                break;
+            }
+            this.drawSplittingPlane(depth);
+            this.drawChildren(depth+1);
+            break;
+        case State.SEARCH_WAITING_1:
+            this.drawSplittingPlane(depth);
+            this.drawChildren(depth+1);
+            break;
+        case State.SEARCH_DONE:
+            if(this.splittingPlane !== null){
+                this.drawSplittingPlane(depth);
+            } else {
+                this.visualizeBounds(0xFFFFFF);
+            }
+            this.drawChildren(depth+1);
+            break;
+        case State.SEARCH_WAITING_2:
+            this.drawSplittingPlane(depth);
+            this.drawChildren(depth+1);
             break;
     }
 };
 
-RPTree.prototype.doStep = function() {
-    if(this.objects.length < 3){
-        return false;
+RPTree.prototype.drawNN = function() {
+    if(RPTree.searchRadius !== null){
+        console.log("center and radius:")
+        var center = RPTree.searchRadius.center;
+        console.log(center);
+        var radius = RPTree.searchRadius.radius;
+        console.log(radius);
+        drawSphereV3(center,radius,0xf47442,true,0.4);
     }
+    if(RPTree.nn !== null){
+        var lineToNN = new THREE.Line3(RPTree.nn,this.searchPoint);
+        this.visualizeLine(lineToNN);
+    }
+};
+
+RPTree.prototype.drawSplittingPlane = function(depth) {
+    this.drawPlane(this.splittingPlane, this.colors[depth % this.colors.length]);
+};
+
+RPTree.prototype.drawChildren = function(depth) {
+    for (var i = 0; i < this.children.length; i++) {
+        this.children[i].draw(depth);
+    }
+};
+
+RPTree.prototype.doStep = function() {
     switch(this.state){
         case State.START:
+            if(this.objects.length <= this.partition_max){
+                this.state = State.DONE_BUILDING;
+                return false;
+            }
             this.state = State.WAITING_LINE;
             return true;
         case State.WAITING_LINE:
@@ -86,16 +152,109 @@ RPTree.prototype.doStep = function() {
             this.state = State.PLANE_MADE;
             return true;
         case State.PLANE_MADE:
-            this.state = State.DONE;
+            this.state = State.DONE_BUILDING;
             return true;
-        case State.DONE:
-            for (var i = 0; i < this.children.length; i++) {
-                if (this.children[i].doStep()) {
-                    return true;
-                }
+        case State.DONE_BUILDING:
+            if (this.doStepInChildren()){
+               return true;
+            }
+            if (this.parent === null){
+                this.state = State.SEARCH_INIT;
+                return true;
             }
             return false;
+        case State.SEARCH_INIT:
+            if (this.children.length === 0){
+                if (this.searchForPoint()){
+                    this.state = State.SEARCH_FOUND;
+                    return true;
+                }
+                this.state = State.SEARCH_DONE;
+                return false;
+            }
+            var selectedChild = null;
+            if (this.partitionPoint(this.searchPoint)){
+                selectedChild = this.children[0];
+            } else {
+                selectedChild = this.children[1];
+            }
+            selectedChild.state = State.SEARCH_INIT;
+            this.state = State.SEARCH_WAITING_1;
+            return true;
+        case State.SEARCH_WAITING_1:
+            if(this.doStepInChildren()){
+                return true;
+            };
+            var selectedChild = null;
+            if (this.partitionPoint(this.searchPoint)){
+                selectedChild = this.children[1];
+            } else {
+                selectedChild = this.children[0];
+            }
+            if(this.radiusClipsEdge()){
+                selectedChild.state = State.SEARCH_INIT;
+                this.state = State.SEARCH_WAITING_2;
+                return true;
+            }
+            this.state = State.SEARCH_DONE;
+            return false;
+        case State.SEARCH_FOUND:
+            this.state = State.SEARCH_DONE;
+            return false;
+        case State.SEARCH_WAITING_2:
+            if(this.doStepInChildren()){
+                return true;
+            }
+            this.state = State.SEARCH_DONE;
+            return false;
     }
+};
+
+RPTree.prototype.searchForPoint = function() {
+    console.log("Searching for NN");
+    var minDistance = null;
+    var minPoint = null;
+    if (RPTree.searchRadius !== null){
+        minDistance = RPTree.searchRadius.radius;
+    }
+    var updated = false;
+    for(var k in this.objects){
+        var point = this.array2Vec(this.objects[k]);
+        var distance = this.searchPoint.distanceTo(point);
+        if (minDistance === null){
+            updated = true;
+            minDistance = distance;
+            minPoint = point;
+        } else if(minDistance > distance){
+            updated = true;
+            minDistance = distance;
+            minPoint = point;
+        }
+    }
+    if (updated){
+        RPTree.nn = minPoint;
+        RPTree.searchRadius = new THREE.Sphere(this.searchPoint,minDistance);
+        console.log("RADIUS:")
+        console.log(RPTree.searchRadius);
+    }
+    return updated;
+};
+
+RPTree.prototype.radiusClipsEdge = function (point) {
+    if(RPTree.searchRadius === null){
+        console.log("No search radius? this should not happen!");
+        return false;
+    }
+    return RPTree.searchRadius.intersectsPlane(this.splittingPlane);
+};
+
+RPTree.prototype.doStepInChildren = function() {
+    for (var i = 0; i < this.children.length; i++) {
+        if (this.children[i].doStep()) {
+            return true;
+        }
+    }
+    return false;
 };
 
 RPTree.prototype.drawConnectingLine = function() {
@@ -125,7 +284,7 @@ RPTree.prototype.test = function (x, y, z) {
         obj.position.z = z;
 
         scene.add(obj);
-    }
+    };
     
 RPTree.prototype.testWithColour = function (x, y, z, colour) {
         var geometry = new THREE.SphereGeometry( 0.3, 8, 6 );
@@ -136,7 +295,7 @@ RPTree.prototype.testWithColour = function (x, y, z, colour) {
         obj.position.z = z;
 
         scene.add(obj);
-    }
+    };
 
 RPTree.prototype.createLine = function() {
     var indices = this.genRand(0,this.objects.length-1,2);
@@ -212,20 +371,17 @@ RPTree.prototype.partition = function() {
     var convexGeometry = new THREE.ConvexGeometry(intersectionPoints);
     var verts = convexGeometry.vertices;
     
-    var pointsToMap = []
+    var pointsToMap = [];
     for (var k in verts){
-        pointsToMap.push(verts[k].clone())
+        pointsToMap.push(verts[k].clone());
     }
     var planeLines = this.GrahamScan(pointsToMap);
     
     for(var k in planeLines){
         beyondPlaneBounds.push(planeLines[k]);
-        otherBounds.push(planeLines[k]);
-        console.log(k)
-        
-        this.visualizeLine(planeLines[k]);
+        otherBounds.push(planeLines[k]);        
+        //this.visualizeLine(planeLines[k]);
     }
-    console.log("-----")
     
     for(var k in this.objects){
         var pt = this.objects[k];
@@ -235,8 +391,8 @@ RPTree.prototype.partition = function() {
             otherPoints.push(pt);
         }
     }
-    this.children.push(new RPTree(beyondPlanePoints,beyondPlaneBounds));
-    this.children.push(new RPTree(otherPoints,otherBounds));
+    this.children.push(new RPTree(beyondPlanePoints,this.searchPoint,beyondPlaneBounds,this.partition_max,this));
+    this.children.push(new RPTree(otherPoints,this.searchPoint,otherBounds,this.partition_max,this));
 };
 
 RPTree.prototype.LinearTransformation = function(points) {
@@ -302,12 +458,10 @@ RPTree.prototype.LinearTransformation = function(points) {
 RPTree.prototype.GrahamScan = function( points ) {
 
     //Using Graham scan (https://en.wikipedia.org/wiki/Graham_scan)
-    
-    console.log("Graham scan..");
      var res = this.LinearTransformation(points);
      var mappedPoints = res[0];
      var restoreMap = res[1];
-     var n = mappedPoints.length
+     var n = mappedPoints.length;
 
     function compareFunction(a,b) {
         var diff = a.y - b.y;
@@ -357,22 +511,20 @@ RPTree.prototype.GrahamScan = function( points ) {
         mappedPoints[i] = tmp;
     }
     
-    mappedPoints.pop()
+    mappedPoints.pop();
     var resLines = [];
     for(var i = 0;i<n;i++){        
         var source = restoreMap.get(mappedPoints[i]);
         var t = mappedPoints[i];        
-        var j = (i+1)%mappedPoints.length
-        var destination = restoreMap.get(mappedPoints[j])
-        var line2 = new THREE.Line3(source,destination)
-        resLines.push(line2)
+        var j = (i+1)%mappedPoints.length;
+        var destination = restoreMap.get(mappedPoints[j]);
+        var line2 = new THREE.Line3(source,destination);
+        resLines.push(line2);
     }
     return resLines;
 };
 
 RPTree.prototype.visualizeLine = function(l) {
-    console.log("VISUALIZING LINE")
-    console.log(l)
     var geometry = new THREE.Geometry();
     geometry.vertices.push(l.start);
     geometry.vertices.push(l.end);
@@ -381,7 +533,6 @@ RPTree.prototype.visualizeLine = function(l) {
     });
     var line = new THREE.Line(geometry,material);
     scene.add(line);
-    console.log("added")
 }
 
 RPTree.prototype.partitionPoint = function (point) {

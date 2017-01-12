@@ -60,7 +60,12 @@ function onGenerateClicked() {
         algorithm = new KDTreeNearestNeighbor(kd, searchPoint);
         //algorithm.draw();
     } else if(algorithmName == "rptree") {
-        rp = new RPTree(points,RPTree.initBounds(min,max))
+        RPTree.searchRadius = null;
+        RPTree.nn = null;
+        var sT = pointSpaceTo3DRenderSpace(searchPoint);
+        var searchVector = new THREE.Vector3(sT[0],sT[1],sT[2]);
+        var initialBounds = RPTree.initBounds(min,max);
+        rp = new RPTree(points,searchVector,initialBounds,maxPartitionElements,null)
         algorithm = rp
     }
     
