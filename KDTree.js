@@ -1,5 +1,5 @@
 //Main KDTree Object. 
-var KDTree = function(x, y, z, size, lvl, points, parent = null){
+var KDTree = function(x, y, z, size, lvl, points, maxElems, parent = null){
 	this.x = x;
 	this.y = y;
 	this.z = z;
@@ -7,7 +7,7 @@ var KDTree = function(x, y, z, size, lvl, points, parent = null){
 	this.lvl = lvl;
 	this.children = [];
 	this.points = points;
-	this.MAX_POINTS = 1;
+	this.MAX_POINTS = maxElems;
 	this.parent = parent;
 	this.splitpoint = null;
 }
@@ -86,16 +86,16 @@ KDTree.prototype.buildTree = function(){
 		
 		if(this.lvl%3 == 0){
 			newwidth = this.splitpoint[0] - this.x;
-			this.children[0] = new KDTree(this.x,this.y,this.z, [newwidth,this.size[1],this.size[2]], this.lvl+1, [], this);
-			this.children[1] = new KDTree(this.splitpoint[0],this.y,this.z, [this.size[0]-newwidth,this.size[1],this.size[2]], this.lvl+1, [], this);
+			this.children[0] = new KDTree(this.x,this.y,this.z, [newwidth,this.size[1],this.size[2]], this.lvl+1, [], this.MAX_POINTS, this);
+			this.children[1] = new KDTree(this.splitpoint[0],this.y,this.z, [this.size[0]-newwidth,this.size[1],this.size[2]], this.lvl+1, [], this.MAX_POINTS, this);
 		} else if(this.lvl%3 == 1){
 			newwidth = this.splitpoint[1]-this.y;
-			this.children[0] = new KDTree(this.x,this.y,this.z, [this.size[0],newwidth,this.size[2]], this.lvl+1, [], this);
-			this.children[1] = new KDTree(this.x,this.splitpoint[1],this.z, [this.size[0],this.size[1]-newwidth,this.size[2]], this.lvl+1, [], this);
+			this.children[0] = new KDTree(this.x,this.y,this.z, [this.size[0],newwidth,this.size[2]], this.lvl+1, [], this.MAX_POINTS, this);
+			this.children[1] = new KDTree(this.x,this.splitpoint[1],this.z, [this.size[0],this.size[1]-newwidth,this.size[2]], this.lvl+1, [], this.MAX_POINTS, this);
 		} else {
 			newwidth = this.splitpoint[2]-this.z;
-			this.children[0] = new KDTree(this.x,this.y,this.z, [this.size[0],this.size[1],newwidth], this.lvl+1, [], this);
-			this.children[1] = new KDTree(this.x,this.y,this.splitpoint[2], [this.size[0],this.size[1],this.size[2]-newwidth], this.lvl+1, [], this);
+			this.children[0] = new KDTree(this.x,this.y,this.z, [this.size[0],this.size[1],newwidth], this.lvl+1, [], this.MAX_POINTS, this);
+			this.children[1] = new KDTree(this.x,this.y,this.splitpoint[2], [this.size[0],this.size[1],this.size[2]-newwidth], this.lvl+1, [], this.MAX_POINTS, this);
 		}
 
 		for(var i = 0; i < temp.length; i++){

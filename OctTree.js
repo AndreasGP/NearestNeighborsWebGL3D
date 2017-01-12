@@ -1,5 +1,5 @@
 //Main Octree Object. 
-var OctTree = function (x, y, z, size, points, parent) {
+var OctTree = function (x, y, z, size, points, maxElems, parent) {
     this.x = x;
     this.y = y;
     this.z = z;
@@ -7,7 +7,7 @@ var OctTree = function (x, y, z, size, points, parent) {
     //Child octants
     this.children = [];
     this.points = points;
-    this.MAX_POINTS_IN_OCTANT = 3;
+    this.MAX_POINTS_IN_OCTANT = maxElems;
     //parent octant
     this.parent = parent;
 }
@@ -50,21 +50,21 @@ OctTree.prototype.draw = function () {
 OctTree.prototype.buildTree = function () {
     if (this.points.length > this.MAX_POINTS_IN_OCTANT) {
         this.children[0] = new OctTree(this.x, this.y, this.z, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
         this.children[1] = new OctTree(this.x + this.size[0] / 2, this.y, this.z, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
         this.children[2] = new OctTree(this.x, this.y, this.z + this.size[2] / 2, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
         this.children[3] = new OctTree(this.x + this.size[0] / 2, this.y, this.z + this.size[2] / 2, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
         this.children[4] = new OctTree(this.x, this.y + this.size[1] / 2, this.z, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
         this.children[5] = new OctTree(this.x + this.size[0] / 2, this.y + this.size[1] / 2, this.z, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
         this.children[6] = new OctTree(this.x, this.y + this.size[1] / 2, this.z + this.size[2] / 2, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
         this.children[7] = new OctTree(this.x + this.size[0] / 2, this.y + this.size[1] / 2, this.z + this.size[2] / 2, 
-			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this);
+			[this.size[0] / 2,this.size[1] / 2,this.size[2] / 2], [], this.MAX_POINTS_IN_OCTANT,this);
 
         //Deep copy array
         var temp = JSON.parse(JSON.stringify(this.points));

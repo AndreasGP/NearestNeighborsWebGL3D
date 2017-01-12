@@ -49,14 +49,14 @@ function onGenerateClicked() {
     maxPartitionElements = document.getElementById("maxElements").value
    
     if(algorithmName == "octree") {
-        oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points);
+        oct = new OctTree(0, 0, 0, [max - min, max - min, max - min], points, maxPartitionElements);
         oct.buildTree();
         oct.draw();
         
         algorithm = new OctTreeNearestNeighbor(oct, searchPoint);
         algorithm.draw();
     } else if(algorithmName == "kdtree") {
-        kd = new KDTree(0, 0, 0, [max - min, max - min, max - min], 0, points);
+        kd = new KDTree(0, 0, 0, [max - min, max - min, max - min], 0, points, maxPartitionElements);
         kd.buildTree();
         kd.draw();
         
