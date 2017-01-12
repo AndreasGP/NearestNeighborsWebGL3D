@@ -165,7 +165,10 @@ function drawSearchPoint() {
         return [sphere, outlineSphere];
 }
 
-function drawCube(pos, size, color, modifier = 0) {
+function drawCube(pos, size, color, modifier) {
+    if(isNaN(modifier)) {
+        modifier = 0;
+    }
     var renderPos = pointSpaceTo3DRenderSpace([pos[0] - modifier/2, pos[1] - modifier/2, pos[2] - modifier/2]);
 
     var renderSize = pointSpaceSizeTo3DRenderSpaceSize([size[0] + modifier, size[1] + modifier, size[2] + modifier]);
@@ -233,6 +236,10 @@ function updateSearchRadius(radius) {
         scene.remove(radiusSphere);
     }
     radiusSphere = drawSphere(searchPoint, radius, 0xff00ff, true, 0.2);
+    //Force it on top
+    radiusSphere.material.depthWrite = false;
+    radiusSphere.material.depthTest = false;
+    radiusSphere.material.renderDepth = 1e20;
 }
 
 //Only supports convex shapes, 3 vertices minimum.
