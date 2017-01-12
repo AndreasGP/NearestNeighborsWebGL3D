@@ -18,6 +18,9 @@ function generatePoints() {
 }
 var algorithm;
 function onGenerateClicked() {
+    
+    onConsoleClearClicked();
+    
     clearEverything();
     
     points = generatePoints();
@@ -79,6 +82,9 @@ stepInterval = 500;
 
 function onDoStepsAutomaticallyChanged() {
     doStepsAutomatically = document.getElementById("autoUpdate").checked;
+    if(doStepsAutomatically) {
+        doNextStep();
+    }
 }
 
 var doNextStep = function(){
