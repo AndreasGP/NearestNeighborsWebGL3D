@@ -303,7 +303,20 @@ function removeFromScene(object) {
 /* BEGIN RENDERING CALLS AND MAIN LOGIC */
 function clearEverything() {
     setupScene();
-    //TODO: Clear 2D projections
+    contextXY.clearRect(0, 0, width, width);
+    contextXZ.clearRect(0, 0, width, width);
+    contextYZ.clearRect(0, 0, width, width);
+
+    contextXY.fillStyle = "#000000";
+    contextXZ.fillStyle = "#000000";
+    contextYZ.fillStyle = "#000000";
+
+    contextXY.rect(0, 0, width, width);
+    contextXY.stroke();
+    contextXZ.rect(0, 0, width, width);
+    contextXZ.stroke();
+    contextYZ.rect(0, 0, width, width);
+    contextYZ.stroke();
 }
 
 function addDataPointsToRendering() {
