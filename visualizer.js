@@ -195,14 +195,14 @@ function drawSphere(pos, radius, color, transparent, opacity) {
         opacity: opacity
     });
     
-    console.log(opacity);
+    //console.log(opacity);
     
     var sphere = new THREE.Mesh(geometry, material);
     
     var renderPos = pointSpaceTo3DRenderSpace(pos);
     
     sphere.position.set(renderPos[0], renderPos[1], renderPos[2]);
-    console.log(sphere.position);
+    //console.log(sphere.position);
     scene.add(sphere);
     
     radiusSphere = sphere;

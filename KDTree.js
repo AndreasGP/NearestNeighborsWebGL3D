@@ -145,6 +145,23 @@ function distanceTo(node, point) {
 KDTreeNearestNeighbor.prototype.checkArea = function (node) {
 	var change = false;
     var points = node.points;
+    if (this.goingDown) {
+    	if (points.length == 0 && node.children.length != 0) {
+            this.visitedAreas.push(node);
+            return change;
+        } else if (points.length != 0) {
+            for (var i = 0; i < points.length; i++) {
+                if (dist(points[i], this.point) < this.nearestDistance) {
+                    this.nearestDistance = dist(points[i], this.point);
+                    this.nearestPoint = points[i];
+                    change = true;
+                }
+            }
+    		this.visitedAreas.push(node);
+    		this.searchArea = node;
+    		return change;
+        }
+    }
     if (points.length == 0 && node.children.length != 0) {
         for (var i = 0; i < node.children.length; i++) {
             if (distanceTo(node.children[i], this.point) <= Math.pow(this.nearestDistance,2) && this.visitedAreas.indexOf(node.children[i]) == -1) {
@@ -154,6 +171,7 @@ KDTreeNearestNeighbor.prototype.checkArea = function (node) {
         }
         if (distanceTo(node.children[0], this.point) <= Math.pow(this.nearestDistance,2) && distanceTo(node.children[1], this.point) <= Math.pow(this.nearestDistance,2)){
         	this.visitedAreas.push(node);
+        	log("Checking if splitpoint is closer");
         	return this.checkSplitpoint(node.splitpoint);
         }
         this.visitedAreas.push(node);
@@ -265,7 +283,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
     }
 
     if(!this.nearestFound){
-    	if(this.searchArea.parent != null && !this.goingDown){
+    	if(this.searchArea.parent.parent != null && !this.goingDown){
     		var parent = this.searchArea.parent;
     		for(var i = 0; i < parent.children.length; i++){
     			var node = parent.children[i];
@@ -278,11 +296,16 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
     				return true;
                 }
     		}
+    		log("Moving up");
     		this.searchArea = parent;
     		return true;
     	} 
 		else {
-    		this.goingDown = true;
+			if(this.searchArea.parent.parent == null && !this.goingDown){
+				this.visitedAreas.push(this.searchArea);
+				this.searchArea = this.searchArea.parent;
+				this.goingDown = true;
+			}
     		if(this.searchArea.children.length != 0){
 	    		var child1 = this.searchArea.children[0];
 	    		var child2 = this.searchArea.children[1];
@@ -292,18 +315,22 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 	    		if(unvisited.length == 2){
 	    			if(distanceTo(child1, this.point) <= Math.pow(this.nearestDistance,2) && 
 	    					distanceTo(child2, this.point) <= Math.pow(this.nearestDistance,2)){
-	    				log("Both subareas need to be checked.");
 	    				if(this.visitedPoints.indexOf(this.searchArea.splitpoint) == -1){
-	    					return checkSplitpoint(this.splitpoint);
+		    				log("Both subareas need to be checked.");
+	    					this.checkSplitpoint(this.searchArea.splitpoint);
+	    					return true;
 	    				}
+	    				log("Checking the first subarea.");
 	    				this.parentsToCheck.push(this.searchArea);
 	    				this.searchArea = child1;
 	    				return true;
 	    			} else if (distanceTo(child1, this.point) <= Math.pow(this.nearestDistance,2)){
+	    				this.visitedAreas.push(this.searchArea);
 	    				this.searchArea = child1;
 	    				log("One of the subareas needs to be checked.");
 	    				return true;
 	    			} else if (distanceTo(child2, this.point) <= Math.pow(this.nearestDistance,2)){
+	    				this.visitedAreas.push(this.searchArea);
 	    				this.searchArea = child2;
 	    				log("One of the subareas needs to be checked.");
 	    				return true;
@@ -314,6 +341,7 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 	    			}
 	    		} else if(unvisited.length == 1){
 	    			if (distanceTo(unvisited[0], this.point) <= Math.pow(this.nearestDistance,2)){
+	    				this.visitedAreas.push(this.searchArea);
 	    				this.searchArea = unvisited[0];
 	    				log("The other subarea needs to be checked.");
 	    				return true;
@@ -351,10 +379,13 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
                 }else{
 					log("No closer points in current area.");
 				}
-    			return true;
     			if(this.parentsToCheck.length == 0){
+    				log("No more areas to check.");
     				this.nearestFound = true;
+    			}else{
+    				this.searchArea = this.parentsToCheck.pop();
     			}
+    			return true;
     		}
     	}
     }
@@ -362,5 +393,6 @@ KDTreeNearestNeighbor.prototype.doStep = function () {
 	    //Tagasta midagi, et teaks et on lähim leitud.
 		log("Final nearest point is " + arrayPointToString(this.nearestPoint) + " at a distance of " + this.nearestDistance.toFixed(2) + ".");
     }
+    else {log("Could not find the point.");}
     return false
 }
