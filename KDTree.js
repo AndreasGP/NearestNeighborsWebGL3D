@@ -77,7 +77,8 @@ KDTree.prototype.draw = function(){
 KDTree.prototype.buildTree = function(){
 	if(this.points.length > this.MAX_POINTS){
 		var temp = JSON.parse(JSON.stringify(this.points));
-		temp = temp.sort(function(a,b){return compare(a,b,0)});
+		var xyz = this.lvl%3;
+		temp = temp.sort(function(a,b){return compare(a,b,xyz)});
 		this.splitpoint = temp[Math.floor(temp.length/2)];
 		
 		this.points = [];
