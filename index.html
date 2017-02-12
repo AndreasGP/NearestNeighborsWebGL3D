@@ -17,7 +17,7 @@
                 <h1 class ="text-center">Nearest Neighbour Search in 3D Visualization</h1>
                 <div class="bottom"></div>
                 <div>
-                    <p>This application is designed to aid people with understanding nearest neighbour searches with K-D trees, Octrees and random projection trees in 3D. Your browser needs to support WebGL for the 3D rendering to work.
+                    <p>This application is designed to aid people with understanding nearest neighbour searches with K-D trees, Octrees and random projection trees in 3D. Your browser needs to support WebGL for the 3D rendering to work (supported on most modern browsers).
                 </div>
                 <ul class="nav nav-tabs">
                     <li class="active"><a data-toggle="tab" href="#tab_algorithms">Algorithms</a></li>
@@ -29,18 +29,17 @@
                     <div id="tab_algorithms" class="tab-pane fade in active">
                         <div class="row">
                             <div class="col-md-6">
-                                <h3>1. Choose the number of data points to use:</h3>
+                                <h4>1. Pick the number of points to be generated:</h4>
                                 <div class="form-group col-md-offset-1 col-md-8">
                                     <select class="form-control" id="randomElementsCount">
                                         <option>10</option>
-                                        <option>25</option>
-                                        <option>50</option>
-                                        <option>100</option>
-                                        <option>200</option>
+                                        <option>20</option>
+                                        <option>40</option>
+                                        <option>80</option>
                                     </select>
                                 </div>
                                 <div class="clearfix"></div>
-                                <h3>3. Pick an algorithm:</h3>
+                                <h4>2. Pick an algorithm:</h4>
                                 <div class="row">
                                     <div class="col-md-offset-1 col-md-8">
                                         <select class="form-control" id="chosenalgorithm">
@@ -50,25 +49,7 @@
                                         </select>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <h3>2. Insert a point for which to find NN for or leave empty for a random point to be generated:</h3> 
-                                <div class="row">
-                                    <div class="col-xs-4">
-                                        <input type="text" placeholder="x" class="form-control" id="searchX">
-                                    </div>
-                                    <div class="col-xs-4">
-                                        <input type="text" placeholder="y" class="form-control" id="searchY">
-                                    </div>
-                                    <div class="col-xs-4">
-                                        <input type="text" placeholder="z" class="form-control" id="searchZ">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 xs-offset-1">
-                                <h3>4. Algorithm parameters:</h3>
+                                <h4>3. Choose algorithm parameters:</h4>
                                 <div class="col-xs-12">
                                     Max number of points in a space partition:
                                     <div class="form-group col-md-offset-1 col-md-8">
@@ -85,29 +66,29 @@
                                 </div>
                                 <div class="checkbox col-xs-12">
                                     <label>
-                                        <input type="checkbox" id="autoUpdate" onclick="onDoStepsAutomaticallyChanged()">Do steps automatically
+                                        <input type="checkbox" checked id="autoUpdate" onclick="onDoStepsAutomaticallyChanged()">Do algorithm steps automatically
                                     </label>
                                 </div>
                                 <div class="col-xs-12">
                                     Automatic step interval: 
                                     <output for="updateInterval" id="updaterIntervalValue">500 ms</output>
-                                    <input type="range" min="50" max="4000" value="500" id="updateInterval" 
+                                    <input class="form-control" type="range" min="50" max="4000" value="500" id="updateInterval" 
                                            step="50" oninput="updateUpdateInterval(value)">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <h3>Algorithm output:</h3>
-                                <textarea class="form-control" rows="7" id="algortihmconsole"></textarea>
+                                <h4>Algorithm output:</h4>
+                                <textarea class="form-control" rows="12" id="algortihmconsole"></textarea>
                                 <button type="button" class="btn btn-xs btn-danger pull-right" onclick="onConsoleClearClicked()">Clear</button>
                             </div>
                         </div>
                         <div class="row">
                             <br>
                             <div class="col-md-offset-2 col-md-4">
-                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onGenerateClicked()" >5. Generate</button>
+                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onGenerateClicked()" >4. Generate & Start</button>
                             </div>
                             <div class="col-md-3">
-                                <button type="button" class="btn btn-lg btn-primary center-block" onclick="onDoNextStepClicked()" >6. Do next step</button>
+                                <button type="button" class="btn btn-lg btn-info center-block" onclick="onDoNextStepClicked()" >Do next step manually</button>
                             </div>
                         </div>
                         <br>

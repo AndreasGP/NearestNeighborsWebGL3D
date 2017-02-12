@@ -28,19 +28,13 @@ function onGenerateClicked() {
     algorithmName = document.getElementById("chosenalgorithm").value
     log("Chosen algorithm is " + algorithmName +".");
     
-    var x = document.getElementById("searchX").value;
-    var y = document.getElementById("searchY").value;
-    var z = document.getElementById("searchZ").value;
+    var x = Math.random() * (max - min) + min;
+    var y = Math.random() * (max - min) + min;
+    var z = Math.random() * (max - min) + min;
+        
+    searchPoint = [x, y, z];
     
-    if(x == "" || y == "" || z == "" || isNaN(x) || isNaN(y) || isNaN(z)) {
-        var x = Math.random() * (max - min) + min;
-        var y = Math.random() * (max - min) + min;
-        var z = Math.random() * (max - min) + min;
-    }
-    
-    searchPoint = [parseInt(x), parseInt(y), parseInt(z)];
-    
-    log("Searching for the nearest neighbour of point " + arrayPointToString(searchPoint) + ".");
+    log("Searching for the nearest neighbour of point " + arrayPointToString(searchPoint) + ", which is highlighted with the colourful outlined sphere.");
     
     addDataPointsToRendering();
     drawSearchPoint();
@@ -77,7 +71,7 @@ function onGenerateClicked() {
     }
 }
 
-doStepsAutomatically = false;
+doStepsAutomatically = true;
 stepInterval = 500;
 
 function onDoStepsAutomaticallyChanged() {
