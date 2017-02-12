@@ -121,10 +121,23 @@
                         <h4>Algorithms</h4>
                         <p><strong><a href="https://en.wikipedia.org/wiki/K-d_tree">K-D tree</a></strong> is an algorithm that splits the data into 2 on one axis at each level. 
                         At each level, an axis is chosen, for example usingg the formula "axis = depth % 3". Then a random point in the current partition is taken and the partition is divided into 2 on the given axis. If the number of points in a partition is below a treshold, no more splits will occur. Nearest neighbour search works very similarly to octree's NN search.</p> 
+						<p>Meaning of colours:<br>
+						Green - searched area<br>
+						Blue - currently processed area<br>
+						Purple - node's residing area<br>
+						Purple sphere - current search radius<br>
+						Yellow node on the edge of the sphere - current nearest neighbor</p>
                         <p><strong><a href="https://en.wikipedia.org/wiki/Octree">Octree</a></strong> is a 3D version of quadtrees. The tree is built by checking the number of points in the current octant (a cube) and if it's bigger than a treshold, the octant will be split into 8 equal octants and the process is repeated recursively.
                         For nearest neighbour search, the octant closest to searchable point is found. If it contains any points, it is set as current best. Then the algorithm recursively backtracks up the tree and checks other octants to see if they are in the radius to possibly contain closer neighbours. If so, the neighbouring octants are also checked.
                         Once there are no octants that haven't been checked and could potentitally contain the nearest neighbour, the algorithm finishes.</p> 
-                        <p><strong><a href="http://cseweb.ucsd.edu/~dasgupta/papers/rptree-stoc.pdf">Random Projection tree</a></strong> is built by picking 2 random points and building a perpendicular plane right between them. Then all points are split into 2 partitions depending on which side of the plane they are. This is repeated until each partition contains less than a given treshold number of points. 
+                        <p>Meaning of colours:<br>
+						Green - searched octant<br>
+						Blue - currently processed octant<br>
+						Purple - node's residing octant<br>
+						Purple sphere - current search radius<br>
+						Yellow node on the edge of the sphere - current nearest neighbor</p>
+						
+						<p><strong><a href="http://cseweb.ucsd.edu/~dasgupta/papers/rptree-stoc.pdf">Random Projection tree</a></strong> is built by picking 2 random points and building a perpendicular plane right between them. Then all points are split into 2 partitions depending on which side of the plane they are. This is repeated until each partition contains less than a given treshold number of points. 
                                 Nearest neighbour search works by recursing down the stree to the partition containing the point. Then the point in that partition is set as current best and the algorithm goes back up the tree while checking at each level if any other partitions are in the radius to possibly contain better candidates. If so, those partitions are also checked. 
                                 When there are no partitions left to check, the algorithm finishes with current best being the nearest neighbour.</strong></p> 
                         <h4>Parameters</h4>
